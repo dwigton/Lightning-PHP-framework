@@ -1,0 +1,71 @@
+/* 
+    Document   : styles
+    Created on : Nov 1, 2011, 12:52:39 PM
+    Author     : daniel
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+body{
+    left:0;
+    right:0;
+    margin-left: auto;
+    margin-right: auto;
+    width:1024px;
+    background-color: #474211;
+}
+
+#page{
+   background-color: white; 
+}
+
+header, footer{
+    padding: 10px 15px 10px 15px;
+    background-color: #F7F78F;
+    color:#542919;
+}
+
+h1{
+    margin: 10px 0 10px 0;
+}
+
+h2{
+    margin: 7px 0 7px 0;
+}
+
+p{
+    margin: 1.5em 0 1.5em 0;
+}
+
+header h1{
+    font-size: 20px;
+}
+
+header h2{
+    font-size: 12px;
+    font-weight: normal;
+}
+
+#content{
+    display: table-row;
+}
+
+.page-content{
+    display: table-cell;
+    padding: 20px 15px 20px 15px;
+    vertical-align: top;
+}
+
+.aside{
+    display: table-cell;
+    width: 200px;
+    padding: 20px 15px 20px 15px;
+    vertical-align: top;
+    border: 1px solid brown;
+}
+
