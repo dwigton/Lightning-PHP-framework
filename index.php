@@ -11,9 +11,16 @@
     require_once 'lightening/lightening_controller_base.php';
     require_once 'lightening/lightening_view_base.php';
     
+    // Set APPBASEPATH to the part of the URI that points to this Lightening application
+    // in the case of www.example.com/ set $APPBASEPATH = "";
+    // in the case where the app resides at www.example.com/somefolder/
+    // then set $APPBASEPATH = "/somefolder";
+    
+    $APPBASEPATH = "";
+    
     // Trim 'REQUEST_URI' if index.php is not in the server's document root.
     
-    $relativepath = substr($_SERVER['REQUEST_URI'],strlen($_SERVER['SCRIPT_FILENAME'])-10);
+    $relativepath = substr($_SERVER['REQUEST_URI'],strlen($APPBASEPATH));
     
     $ROUTER = new lightening_router($relativepath);
     
