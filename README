@@ -1,0 +1,13 @@
+Lightening is currently a learning tool. It's development and are intended to
+be useful in instructing beginners to PHP MVC frameworks on the design
+considerations required in a more advanced framework.
+
+A PHP developer of moderate ability should be able to get started with 
+Lightening merely by glancing through the routes.php file and the
+lightening/lightening_view_base.php files.
+
+Lightening does not want to impose any particular document structure on its
+users and as such controllers and views can be organized in anyway desired.
+Classes and functions can also follow any naming pattern desired. There are some
+defaults for testing but the developer can make any change they like to 
+routes.php.
