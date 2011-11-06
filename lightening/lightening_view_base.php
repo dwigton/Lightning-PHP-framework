@@ -9,11 +9,6 @@ class Lightening_View{
     
     public function __construct($template_file_path){
         $this->_template_file_path = $template_file_path;
-        $this->init();
-    }
-    
-    protected function init(){
-        //Should be overriden in inherited classes.
     }
     
     public static function newExtendedView($view_file_path, $view_class_name, $template_file_path = null){
