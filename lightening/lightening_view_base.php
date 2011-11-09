@@ -4,7 +4,7 @@ class Lightening_View{
     private $_child_views;
     private $_css_files = array();
     private $_script_files = array();
-    private $_var = array();
+    protected $_var = array();
     private $_template_file_path;
     
     public function __construct($template_file_path){
@@ -78,7 +78,7 @@ class Lightening_View{
         }
         
         foreach($cssArray as $css_file){
-            $output .= "<link rel='stylesheet' type='text/css' href='$css_file' />";
+            $output .= "<link rel='stylesheet' type='text/css' href='$css_file' />\n";
         }
         
         return $output;
@@ -92,7 +92,7 @@ class Lightening_View{
         }
         
         foreach($scriptArray as $script_file){
-            $output .= "<script type='text/javaScript' src='$script_file' ></script>";
+            $output .= "<script type='text/javaScript' src='$script_file' ></script>\n";
         }
         
         return $output;
