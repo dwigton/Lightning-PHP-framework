@@ -6,8 +6,4 @@ class Standard_Page_View extends Lightening_View{
         $this->addCss('media/css/styles.css');
     }
 }
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 ?>
