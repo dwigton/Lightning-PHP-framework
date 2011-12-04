@@ -15,19 +15,14 @@ class Lightening_Router_Base
     protected function addRoute($pattern, $controller_route, $controller_class_name, $function_name){
         
         $route_patterns     = explode("/",trim($pattern," /"));
-        $uri                = $this->_uri;;
+        $uri                = $this->_uri;
+        $parameters = array();
         
-        if($route_patterns[count($route_patterns)-1] == '...'){
-            if(count($uri) >= count($route_patterns) - 1){
-                $parameters = array_slice($uri, count($route_patterns) - 1);
-                $uri = array_slice($uri,0, count($route_patterns) - 1);
-                if(count($parameters)==1 && $parameters[0]==''){$parameters = array();}
-            }else{
-                return; //exit without a match if the uri is too short to possibly match the pattern
-            }
-            array_pop($route_patterns);
+        //Parameters are stripped off the uri
+        if(count($uri) > count($route_patterns)){
+            $parameters = array_slice($uri, count($route_patterns));
+            $uri = array_slice($uri,0, count($route_patterns));
         }
-        //Parameters are now stripped off the uri and route_pattern
         
         //Return if the uri and patterns are differing lengths making a match impossible
         if(count($uri) != count($route_patterns)){return;}

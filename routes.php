@@ -23,10 +23,10 @@ class Lightening_Router extends Lightening_Router_Base
     *   is a good idea to start with the most general route and add more specific routes lower
     *   in the list.
     */
-        $this->addRoute('/...','app/controllers/index_controller.php','Index_Controller_Class' , 'index');
-        $this->addRoute('[a-z]+/...', 'app/controllers/index_controller.php', 'Index_Controller_Class', '#1');
-        $this->addRoute('[a-z]+/...', 'app/controllers/#1_controller.php', '#1\U_Controller_Class', 'index');
-        $this->addRoute('[a-z]+/[a-z]+/...', 'app/controllers/#1_controller.php', '#1\U_Controller_Class', '#2');
+        $this->addRoute('','app/controllers/index_controller.php','Index_Controller_Class' , 'index');
+        $this->addRoute('[a-z]+', 'app/controllers/index_controller.php', 'Index_Controller_Class', '#1');
+        $this->addRoute('[a-z]+', 'app/controllers/#1_controller.php', '#1\U_Controller_Class', 'index');
+        $this->addRoute('[a-z]+/[a-z]+', 'app/controllers/#1_controller.php', '#1\U_Controller_Class', '#2');
     
     }
 }
