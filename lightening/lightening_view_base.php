@@ -1,7 +1,7 @@
 <?php
 class Lightening_View{
 
-    private $_child_views;
+    private $_child_views = array();
     private $_css_files = array();
     private $_script_files = array();
     protected $_var = array();
@@ -72,10 +72,7 @@ class Lightening_View{
     
     protected function getCss(){
         $output = "";
-        $cssArray = $this->_css_files;
-        foreach ($this->_child_views as $child_view){
-            $cssArray = array_merge($cssArray,$child_view->cssArray());
-        }
+        $cssArray = $this->cssArray();
         
         foreach($cssArray as $css_file){
             $output .= "<link rel='stylesheet' type='text/css' href='$css_file' />\n";
@@ -86,10 +83,7 @@ class Lightening_View{
     
     protected function getScript(){
         $output = "";
-         $scriptArray = $this->_script_files;
-        foreach ($this->_child_views as $child_view){
-            $scriptArray = array_merge($scriptArray,$child_view->scriptArray());
-        }
+        $scriptArray = $this->scriptArray();
         
         foreach($scriptArray as $script_file){
             $output .= "<script type='text/javaScript' src='$script_file' ></script>\n";
@@ -98,8 +92,20 @@ class Lightening_View{
         return $output;
     }
     
-    public function cssArray(){ return $this->_css_files; }
+    public function cssArray(){ 
+        $cssArray = $this->_css_files;
+        foreach ($this->_child_views as $child_view){
+            $cssArray = array_merge($cssArray, $child_view->cssArray());
+        }
+        return $cssArray;     
+    }
     
-    public function scriptArray(){ return $this->_script_files; }
+    public function scriptArray(){ 
+        $scriptArray = $this->_script_files;
+        foreach ($this->_child_views as $child_view){
+            $scriptArray = array_merge($scriptArray, $child_view->scriptArray());
+        }
+        return $scriptArray;    
+    }
 }
 ?>
