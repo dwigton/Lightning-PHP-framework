@@ -1,6 +1,6 @@
 <div class ="page-content">
     <h1>A light weight, home-baked solution</h1>
-    <p>The Lightening PHP framework was built to study the trade offs and considerations
+    <p>The Lightening PHP framework is built to study the trade offs and considerations
         encountered in designing a framework. This study began out of frustration in 
         deciphering some more complex frameworks and from poor choices made whilst
         using more simple frameworks.
