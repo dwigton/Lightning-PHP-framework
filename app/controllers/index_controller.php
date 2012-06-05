@@ -1,14 +1,14 @@
 <?php
 class Index_Controller_Class{
     
-    public function index(){
+    public function indexAction(){
         $page = Lightening_View::newExtendedView('app/views/standard_page_view.php', 'Standard_Page_view')
                 ->addNewExtendedChild('content', 'app/views/home_page_view.php', 'Home_Page_View')
                 ->setVar('title','Home Page')
                 ->render();
     }
     
-    public function simple(){
+    public function simpleAction(){
         $page = new Lightening_View('app/templates/standard_page_template.php');
         $page->addNewChild('content', 'app/templates/home_page_template.php')
                 ->addCss('media/css/reset.css')

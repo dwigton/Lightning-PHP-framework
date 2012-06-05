@@ -1,5 +1,1 @@
-$(document).ready(function(){
-    
-});
-
-
+// Some JavaScript. This file here for demonstration purposes only.
