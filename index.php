@@ -13,24 +13,26 @@ require_once 'lightening/lightening_event.php';
 require_once 'lightening/app.php';
 
 
-// Set APPBASEPATH to the part of the URI that points to this Lightening application
-// in the case of www.example.com/ set $APPBASEPATH = "";
+// Set PROJECT_DIR to the part of the URI that points to this Lightening application
+// in the case of www.example.com/ set PROJECT_DIR = "/";
 // in the case where the app resides at www.example.com/somefolder/
-// then set $APPBASEPATH = "/somefolder";
+// then set PROJECT_DIR = "/somefolder/";
 
-$APPBASEPATH = "";
+define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT']);
+define('PROJECT_DIR', '/');
+define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . PROJECT_DIR);
+
+// Trim 'REQUEST_URI' if index.php is not in the server's document root.
+define('URI', substr($_SERVER['REQUEST_URI'],strlen(PROJECT_DIR)-1));
 
 // Nicely format output to browser for human readability. Not terribly useful for
 // a production site as it slows down requests, but great for tutorials.
 // Uncomment the following line to enable.
 
-//Lightening_Event::addObserver('Render_Complete', 'lightening/app.php', 'APP', 'formatOutput');
+Lightening_Event::addObserver('Render_Complete', 'lightening/app.php', 'APP', 'formatOutput');
 
-// Trim 'REQUEST_URI' if index.php is not in the server's document root.
 
-$relativepath = substr($_SERVER['REQUEST_URI'],strlen($APPBASEPATH));
-
-$ROUTER = new lightening_router($relativepath);
+$ROUTER = new lightening_router(URI);
 
 require_once $ROUTER->controllerFile();
 
