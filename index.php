@@ -7,7 +7,6 @@ ini_set('display_errors', 1);
 // Require all base framework files
 require_once 'lightening/lightening_router_base.php';
 require_once 'routes.php';
-require_once 'lightening/lightening_controller_base.php';
 require_once 'lightening/lightening_view_base.php';
 require_once 'lightening/lightening_event.php';
 require_once 'lightening/app.php';
