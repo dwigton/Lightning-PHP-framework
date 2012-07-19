@@ -51,7 +51,7 @@ class Lightening_View{
             $this->_var = array_merge($this->_var, $variable_array);
         }
         extract($this->_var);
-        require $this->_template_file_path;
+        require_once $this->_template_file_path;
         return $this;
     }
     
