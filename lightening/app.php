@@ -1,9 +1,9 @@
 <?php
 /*
- * This class contains universal methods and parametes
+ * This class contains universal methods and parameters
  * 
  */
-class APP
+class App
 {
     private static $_output_buffer;
     
@@ -72,5 +72,11 @@ class APP
           endwhile; 
 
           return $result;
+    }
+    
+    public static function getModel($file_path)
+    {
+        require_once $file_path;
+        //return new $class_name;
     }
 }

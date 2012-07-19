@@ -45,7 +45,7 @@ call_user_func_array(array($CONTROLLER,$ROUTER->method()),$ROUTER->parameters())
 ob_end_flush();
 
 function afterRender($html){
-    APP::setBuffer($html);
+    App::setBuffer($html);
     Lightening_Event::raiseEvent('Render_Complete', array('html'=>$html));
-    return APP::getBuffer();
+    return App::getBuffer();
 }
