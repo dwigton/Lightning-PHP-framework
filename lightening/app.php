@@ -7,15 +7,18 @@ class App
 {
     private static $_output_buffer;
     
-    public static function getBuffer(){
+    public static function getBuffer()
+    {
         return self::$_output_buffer;
     }
     
-    public static function setBuffer($buffer){
+    public static function setBuffer($buffer)
+    {
         self::$_output_buffer = $buffer;
     }
     
-    public function formatOutput($html){
+    public function formatOutput($html)
+    {
         
         $dom = explode("\n", self::$_output_buffer);
         
@@ -31,7 +34,8 @@ class App
         self::$_output_buffer = $this->formatXmlString(implode("\n", $dom));
     }
     
-    public function formatXmlString($xml) {  
+    public function formatXmlString($xml)
+    {  
 
           // add marker linefeeds to aid the pretty-tokeniser (adds a linefeed between all tag-end boundaries)
           //$xml = preg_replace('/(>)(<)(\/*)/', "$1\n$2$3", $xml);

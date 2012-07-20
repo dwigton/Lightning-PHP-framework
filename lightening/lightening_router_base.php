@@ -7,13 +7,14 @@ class Lightening_Router_Base
     private $_parameters = array();
     private $_uri;
     
-    public function __construct($uri){
+    public function __construct($uri)
+    {
         $this->_uri = $paths = explode("/",trim($uri," /"));
         $this->initializeRoutes();
     }
     
-    protected function addRoute($pattern, $controller_route, $controller_class_name, $function_name){
-        
+    protected function addRoute($pattern, $controller_route, $controller_class_name, $function_name)
+    {    
         $route_patterns     = explode("/",trim($pattern," /"));
         $uri                = $this->_uri;
         $parameters = array();
@@ -89,7 +90,8 @@ class Lightening_Router_Base
     
     public function parameters(){ return $this->_parameters; }
         
-    protected function initializeRoutes(){
+    protected function initializeRoutes()
+    {
         $error = "Classes that inherit from Lightening_Router_Base must implement an initializeRoutes() function";    
         throw new Exception($error);
     }

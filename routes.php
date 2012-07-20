@@ -1,7 +1,8 @@
 <?
 class Lightening_Router extends Lightening_Router_Base
 {
-    protected function initializeRoutes(){
+    protected function initializeRoutes()
+    {
     /*
     *   Add Routes to controllers with the addRoute() function
     *   
@@ -17,7 +18,7 @@ class Lightening_Router extends Lightening_Router_Base
     *   than or equal to the number of total parameters.
     * 
     *   An incorrect number of parameters, a non-existant controller class or method, 
-    *   or incorrect file path will result in calling a defualt 404 page not found error.
+    *   or incorrect file path will result in calling a default 404 page not found error.
     * 
     *   The Lightening_Router_Base class will choose the last matching route added. Thus it
     *   is a good idea to start with the most general route and add more specific routes lower
