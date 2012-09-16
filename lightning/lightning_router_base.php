@@ -13,7 +13,7 @@ class Lightning_Router_Base
         $this->initializeRoutes();
     }
     
-    protected function addRoute($pattern, $controller_route, $controller_class_name, $function_name)
+    public function addRoute($pattern, $controller_route, $controller_class_name, $function_name)
     {    
         $route_patterns     = explode("/",trim($pattern," /"));
         $uri                = $this->_uri;

@@ -3,7 +3,7 @@ class Output_Formatter_Observer
 {
     public function formatOutput($html)
     {
-        $dom = explode("\n", self::$_output_buffer);
+        $dom = explode("\n", App::getBuffer());
         
         foreach($dom as $line_num=>$line){
             $line = trim($line);
@@ -14,7 +14,7 @@ class Output_Formatter_Observer
             $dom[$line_num] = $line;    
         }
         
-        self::$_output_buffer = $this->formatXmlString(implode("\n", $dom));
+        App::setBuffer($this->formatXmlString(implode("\n", $dom)));
     }
     
     public function formatXmlString($xml)
