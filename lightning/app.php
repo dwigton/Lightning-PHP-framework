@@ -42,7 +42,7 @@ class App
         require_once self::$_models[$handle]['file'];
         
         if(func_num_args() > 1){
-            $reflector = new ReflectionClass('class');
+            $reflector = new ReflectionClass(self::$_models[$handle]['class']);
             return $reflector->newInstanceArgs(array_slice(func_get_args(), 1));
         }else{
             return new self::$_models[$handle]['class']();

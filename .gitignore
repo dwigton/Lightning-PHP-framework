@@ -2,3 +2,4 @@
 nbproject
 *.kdev4
 var
+modules/test

@@ -9,7 +9,7 @@ class Lightning_Router extends Lightning_Router_Base
     *   addRoute("/regex1/regex2/./regexn",
     *            "controller/path",
     *            "name_of_controller_class",
-    *            "name_of_method";
+    *            "name_of_method");
     *   
     *   The regular expressions will be put in variables referenceble as #1, #2, #3 etc..
     *   All further items in the URI will be sent to the matching method as arguments. 
