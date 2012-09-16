@@ -11,3 +11,8 @@ users and as such controllers and views can be organized in anyway desired.
 Classes and functions can also follow any naming pattern desired. There are some
 defaults for testing but the developer can make any change they like to 
 routes.php.
+
+Modularity and event observer registering can be accomplished by editing
+modules.php. While it is good practice to use some sort of convention throutout
+a project, no particular file structure is imposed my the module system. 
+Lightning merely makes it easy for the programmer to build their own structure.
