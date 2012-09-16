@@ -1,32 +1,6 @@
 <?php
-/*
- * This class contains universal methods and parameters
- * 
- */
-class App
+class Output_Formatter_Observer
 {
-    private static $_output_buffer;
-    private static $_router;
-    
-    public static function getBuffer()
-    {
-        return self::$_output_buffer;
-    }
-    
-    public static function setBuffer($buffer)
-    {
-        self::$_output_buffer = $buffer;
-    }
-    
-    public static function router()
-    {
-        return self::$_router;
-    }
-    
-    public static function initRouter($uri, $router_class = 'Lightning_Router'){
-        self::$_router = new $router_class($uri);
-    }
-    
     public function formatOutput($html)
     {
         $dom = explode("\n", self::$_output_buffer);
@@ -84,11 +58,5 @@ class App
           endwhile; 
 
           return $result;
-    }
-    
-    public static function getModel($file_path)
-    {
-        require_once $file_path;
-        //return new $class_name;
     }
 }

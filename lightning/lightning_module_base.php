@@ -1,5 +1,5 @@
 <?php
-class Lighning_Module_Base
+class Lightning_Module_Base
 {
     //private $_modules = array();
     public function __construct() {
@@ -20,6 +20,5 @@ class Lighning_Module_Base
                 }
             }
         }
-    }
-    
+    } 
 }

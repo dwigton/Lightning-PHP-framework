@@ -4,9 +4,9 @@ class Lightning_Event {
     
     private static $_observers = array();
     
-    public static function addObserver($event_name, $file_name, $class, $function)
+    public static function addObserver($event_name, $file_name, $class, $function, $stop_processing = FALSE)
     {
-        self::$_observers[] = array('name'=>$event_name, 'file'=>$file_name, 'class'=>$class, 'function'=>$function);
+        self::$_observers[] = array('name'=>$event_name, 'file'=>$file_name, 'class'=>$class, 'function'=>$function, 'stop' => $stop_processing);
     }
     
     public static function raiseEvent($event_name, $data = array())
@@ -17,6 +17,7 @@ class Lightning_Event {
                 if(class_exists($observer['class'])){
                     $observer_class = new $observer['class']();
                     $observer_class->$observer['function']($data);
+                    if($observer['stop']){ return; }
                 }
             }
         }
