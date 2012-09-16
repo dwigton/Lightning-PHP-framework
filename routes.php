@@ -1,5 +1,5 @@
 <?
-class Lightening_Router extends Lightening_Router_Base
+class Lightning_Router extends Lightning_Router_Base
 {
     protected function initializeRoutes()
     {
@@ -20,7 +20,7 @@ class Lightening_Router extends Lightening_Router_Base
     *   An incorrect number of parameters, a non-existant controller class or method, 
     *   or incorrect file path will result in calling a default 404 page not found error.
     * 
-    *   The Lightening_Router_Base class will choose the last matching route added. Thus it
+    *   The Lightning_Router_Base class will choose the last matching route added. Thus it
     *   is a good idea to start with the most general route and add more specific routes lower
     *   in the list.
     */

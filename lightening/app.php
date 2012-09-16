@@ -6,6 +6,7 @@
 class App
 {
     private static $_output_buffer;
+    private static $_router;
     
     public static function getBuffer()
     {
@@ -15,6 +16,15 @@ class App
     public static function setBuffer($buffer)
     {
         self::$_output_buffer = $buffer;
+    }
+    
+    public static function router()
+    {
+        return self::$_router;
+    }
+    
+    public static function initRouter($uri, $router_class = 'Lightning_Router'){
+        self::$_router = new $router_class($uri);
     }
     
     public function formatOutput($html)

@@ -1,6 +1,6 @@
 <?php
 
-class Lightening_Event {
+class Lightning_Event {
     
     private static $_observers = array();
     

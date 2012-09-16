@@ -1,5 +1,5 @@
 <?php
-class Lightening_View{
+class Lightning_View{
 
     private $_child_views = array();
     private $_css_files = array();
@@ -26,7 +26,7 @@ class Lightening_View{
     
     public function addNewChild($handle, $template_file_path)
     {
-        $this->_child_views[$handle] = new Lightening_View($template_file_path);
+        $this->_child_views[$handle] = new Lightning_View($template_file_path);
         return $this;
     }
     

@@ -1,6 +1,6 @@
 <div class ="page-content">
     <h1>A light weight, home-baked solution</h1>
-    <p>The Lightening PHP framework is built to study the trade offs and considerations
+    <p>The Lightning PHP framework is built to study the trade offs and considerations
         encountered in designing a framework. This study began out of frustration in 
         deciphering some more complex frameworks and from poor choices made whilst
         using more simple frameworks.
@@ -10,7 +10,7 @@
         that I like about each and things I don't like so much.
     </p>
     <p>
-        The design philosophy of Lightening is power and flexibility without hiding
+        The design philosophy of Lightning is power and flexibility without hiding
         the ball. The user should not have to read core code to understand how to
         proceed, but if they get stuck it should be immediately clear what is going on.
         Magento and Rails do not do a particularly good job of this. CodeIgniter is better
@@ -19,7 +19,7 @@
     <p>
         This ugliness may be entirely due to my lack of understanding in how the framework
         was intended to be used. This is very likely and deepening my understanding is
-        of course why Lightening exists.
+        of course why Lightning exists.
     </p>
 </div>
 <div class="aside">

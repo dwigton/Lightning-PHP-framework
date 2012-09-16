@@ -1,5 +1,5 @@
 <?php
-class Standard_Page_View extends Lightening_View
+class Standard_Page_View extends Lightning_View
 {
     public function __construct()
     {

@@ -1,8 +1,8 @@
 <?php
-class Lightening_Router_Base
+class Lightning_Router_Base
 {
-    private $_controllerFile = 'lightening/lightening_error_controller.php';
-    private $_controller = 'Lightening_Error_Controller';
+    private $_controllerFile = 'lightning/lightning_error_controller.php';
+    private $_controller = 'Lightning_Error_Controller';
     private $_method = 'notFound';
     private $_parameters = array();
     private $_uri;
@@ -92,7 +92,7 @@ class Lightening_Router_Base
         
     protected function initializeRoutes()
     {
-        $error = "Classes that inherit from Lightening_Router_Base must implement an initializeRoutes() function";    
+        $error = "Classes that inherit from Lightning_Router_Base must implement an initializeRoutes() function";    
         throw new Exception($error);
     }
 }

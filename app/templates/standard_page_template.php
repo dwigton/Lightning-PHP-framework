@@ -9,7 +9,7 @@
         <div id="page">
             <header>
                 <hgroup>
-                    <h1>Lightening Framework</h1>
+                    <h1>Lightning Framework</h1>
                     <h2>Lightweight and light hearted</h2>
                 </hgroup>
             </header>

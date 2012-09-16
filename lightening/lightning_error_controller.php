@@ -1,5 +1,5 @@
 <?php
-class Lightening_Error_Controller{
+class Lightning_Error_Controller{
     
     public function notFound()
     {
