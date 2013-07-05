@@ -1,7 +1,7 @@
 <?php
-class Lightning_Router_Base
+class Lightning_Router
 {
-    private $_controllerFile = 'lightning/lightning_error_controller.php';
+    private $_controllerFile = 'lightning/error_controller.php';
     private $_controller = 'Lightning_Error_Controller';
     private $_method = 'notFound';
     private $_parameters = array();
@@ -10,7 +10,6 @@ class Lightning_Router_Base
     public function __construct($uri)
     {
         $this->_uri = $paths = explode("/",trim($uri," /"));
-        $this->initializeRoutes();
     }
     
     public function addRoute($pattern, $controller_route, $controller_class_name, $function_name)
@@ -89,11 +88,5 @@ class Lightning_Router_Base
     public function method(){ return $this->_method; }
     
     public function parameters(){ return $this->_parameters; }
-        
-    protected function initializeRoutes()
-    {
-        $error = "Classes that inherit from Lightning_Router_Base must implement an initializeRoutes() function";    
-        throw new Exception($error);
-    }
 }
 ?>

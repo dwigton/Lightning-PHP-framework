@@ -8,6 +8,7 @@ class App
     private static $_output_buffer;
     private static $_router;
     private static $_models = array();
+    private static $_data_sources = array();
     
     public static function getBuffer()
     {
@@ -29,6 +30,27 @@ class App
         self::$_router = new $router_class($uri);
     }
     
+    public static function addRoute($pattern, $controller_route, $controller_class_name, $function_name)
+    {
+        self::$_router->addRoute($pattern, $controller_route, $controller_class_name, $function_name);
+    }
+    
+    public static function addModule($config_file_path, $module_class_name, $init_method)
+    {
+        if(file_exists($config_file_path)){
+            include_once $config_file_path;
+            if(class_exists($module_class_name)){
+                
+                $ModuleReflectionClass = new ReflectionClass($module_class_name); 
+
+                if($ModuleReflectionClass->hasMethod($init_method)){
+                    $module = new $module_class_name();
+                    call_user_func(array($module,$init_method));
+                }
+            }
+        }
+    } 
+    
     public static function addModel($handle, $file_path, $model_class)
     {
         self::$_models[$handle] = array(
@@ -47,6 +69,16 @@ class App
         }else{
             return new self::$_models[$handle]['class']();
         }
+    }
+    
+    public static function addDataSource($handle, Lightning_Stored_Adapter_Abstract $adapter)
+    {
+        self::$_data_sources[$handle] = $adapter;
+    }
+    
+    public static function getDataSource($handle)
+    {
+        return self::$_data_sources[$handle];
     }
     
     public static function log($message, $log_file = 'application.log')
