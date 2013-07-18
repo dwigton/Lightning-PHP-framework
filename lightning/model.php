@@ -2,8 +2,12 @@
 class Lightning_Model
 {
     protected $_data = array();
-    protected $_collection_type = "Lightning_Collection";
+    protected $_collection_type = "Lightning_Model";
+    protected $_sub_collections = array();
+    protected $_keys = array();
     
+    
+
     public function getData()
     {
         return $this->_data;
@@ -11,7 +15,11 @@ class Lightning_Model
     
     public function getKey($key)
     {
-        return $this->_data[$key];
+        if($this->hasKey($key)){
+            return $this->_data[$key];
+        }else{
+            return null;
+        }
     }
     
     public function hasKey($key)
@@ -52,8 +60,10 @@ class Lightning_Model
     public function getCollection()
     {
         $collection = new $this->_collection_type();
-        $collection->setItemType(__CLASS__);
+        $collection->setItemType(get_class($this));
         
         return $collection;
     }
+    
+    
 }

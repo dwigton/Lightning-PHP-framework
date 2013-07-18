@@ -14,5 +14,5 @@ routes.php.
 
 Modularity and event observer registering can be accomplished by editing
 modules.php. While it is good practice to use some sort of convention throutout
-a project, no particular file structure is imposed my the module system. 
+a project, no particular file structure is imposed by the module system. 
 Lightning merely makes it easy for the programmer to build their own structure.

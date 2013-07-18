@@ -4,15 +4,10 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Require all base framework files.
-require_once 'lightning/lightning_router_base.php';
-require_once 'routes.php';
-require_once 'lightning/lightning_view_base.php';
-require_once 'lightning/lightning_event.php';
+// Include the App class
 require_once 'lightning/app.php';
-require_once 'lightning/lightning_module_base.php';
-require_once 'modules.php';
-
+// Adding a function to find all the base lightnining files
+spl_autoload_register('loadLightning');
 
 // Set PROJECT_DIR to the part of the URI that points to this Lightning application
 // in the case of www.example.com/ set PROJECT_DIR = "/";
@@ -28,7 +23,8 @@ define('URI', substr($_SERVER['REQUEST_URI'],strlen(PROJECT_DIR)-1));
 
 App::initRouter(URI);
 
-$module_manager = new Lightning_Module_Manager();
+// Load the project config.
+require_once 'config.php';
 
 require_once App::router()->controllerFile();
 $controller_class_name = App::router()->controller();
@@ -43,4 +39,12 @@ function afterRender($html)
     App::setBuffer($html);
     Lightning_Event::raiseEvent('Render_Complete', array('html'=>$html));
     return App::getBuffer();
+}
+
+function loadLightning($class_name)
+{
+    $path = ROOT_PATH."/".strtolower(str_replace('_', '/', $class_name)).".php";
+    if(file_exists($path)){
+        include $path;
+    }
 }
