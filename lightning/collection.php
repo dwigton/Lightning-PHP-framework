@@ -8,6 +8,8 @@ class Lightning_Collection implements Iterator
     protected $_keys                = array();
     protected $_collections         = array();
     
+    protected $_filtered    = true;
+    
     const JOIN_OUTER        = 1;
     const JOIN_INNER        = 2;
     const JOIN_LEFT_OUTER   = 3;
@@ -39,7 +41,7 @@ class Lightning_Collection implements Iterator
     
     // Data manipulation functions
     
-    public function filter($key, $comp, $value, $operator = 'and')
+    public function filter($key, $comp, $value)
     {
         $this->_filters[] = array(
             'key'       => $key,
@@ -47,53 +49,62 @@ class Lightning_Collection implements Iterator
             'value'     => $value
         );
         
-        $this->operate($operator);
-    }
-    
-    public function applyFilter()
-    {
-        $result = array();
-        foreach($this->_items as $item){
-            reset($this->_filter_operations);
-            $stack = array();
-            foreach($this->_filters as $key => $filter){
-                array_push($stack, $this->evaluateFilter($filter, $item));
-                $operation = current($this->_filter_operations);
-                
-                while($operation && $operation['key'] == $key){
-                    
-                    switch($operation['type']){
-                        case 'and'  : if(count($stack) < 2){throw new Exception("Too few items in RPN stack");}
-                                        $arg1 = array_pop($stack);
-                                        $arg2 = array_pop($stack);
-                                        array_push($stack, $arg1 && $arg2); break;
-                        case 'or'   : if(count($stack) < 2){throw new Exception("Too few items in RPN stack");}
-                                        $arg1 = array_pop($stack);
-                                        $arg2 = array_pop($stack);
-                                        array_push($stack, $arg1 || $arg2); break;
-                        case 'not'  : if(count($stack) < 1){throw new Exception("Too few items in RPN stack");}
-                                        array_push($stack, ! array_pop($stack)); break;
-                        default     : break;
-                    }
-                    $operation = next($this->_filter_operations);
-                }
-                
-                if(!$operation && count($stack) > 1){
-                    throw new Exception('Too few filter operations');
-                }
-            }
-            if(next($this->_filter_operations)){
-                throw new Exception('Too many filter operations');
-            }
-            if(array_pop($stack)){
-                $result[] = $item;
-            }
-        }
+        $this->_filtered = false;
         
-        $this->_items = $result;
+        return $this;
     }
     
-    protected function evaluateFilter($filter, $item)
+    /*
+     *  Applies Filters in RPN fashion
+     */
+    public function applyFilters()
+    {
+        if(!$this->_filtered){
+            $result = array();
+            foreach($this->_items as $item){
+                reset($this->_filter_operations);
+                $stack = array();
+                foreach($this->_filters as $key => $filter){
+                    array_push($stack, $this->_evaluateFilter($filter, $item));
+                    $operation = current($this->_filter_operations);
+
+                    while($operation && $operation['key'] == $key){
+
+                        switch($operation['type']){
+                            case 'and'  : if(count($stack) < 2){throw new Exception("Too few items in RPN stack");}
+                                            $arg1 = array_pop($stack);
+                                            $arg2 = array_pop($stack);
+                                            array_push($stack, $arg1 && $arg2); break;
+                            case 'or'   : if(count($stack) < 2){throw new Exception("Too few items in RPN stack");}
+                                            $arg1 = array_pop($stack);
+                                            $arg2 = array_pop($stack);
+                                            array_push($stack, $arg1 || $arg2); break;
+                            case 'not'  : if(count($stack) < 1){throw new Exception("Too few items in RPN stack");}
+                                            array_push($stack, ! array_pop($stack)); break;
+                            default     : break;
+                        }
+                        $operation = next($this->_filter_operations);
+                    }
+
+                    if(!$operation && count($stack) > 1){
+                        throw new Exception('Too few filter operations');
+                    }
+                }
+                if(next($this->_filter_operations)){
+                    throw new Exception('Too many filter operations');
+                }
+                if(array_pop($stack)){
+                    $result[] = $item;
+                }
+            }
+
+            $this->_items = $result;
+            $this->_filtered = true;
+        }
+        return $this;
+    }
+    
+    protected function _evaluateFilter($filter, $item)
     {
         if($item->hasKey($filter['key'])){
             switch($filter['comp']){
@@ -113,6 +124,7 @@ class Lightning_Collection implements Iterator
     {
         end($this->_filters);
         $this->_filter_operations[] = array('key' => key($this->_filters), 'type' => $type); 
+        return $this;
     }
     
     public function joinCollection($alias, $collection, $foreign_key_array, $condition_array, $key_array, $available_keys, $join_type = self::JOIN_OUTER)
@@ -161,6 +173,7 @@ class Lightning_Collection implements Iterator
     
     public function rewind()
     {
+        $this->applyFilters();
         reset($this->_items);
     }
   
