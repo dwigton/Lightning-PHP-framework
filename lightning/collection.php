@@ -216,12 +216,7 @@ class Lightning_Collection implements Iterator
                     $coll2 = array_pop($stack);
                     $coll1 = array_pop($stack);
                     
-                    switch($join['type']){
-                        case self::JOIN_INNER   : $stack[] = self::innerJoin($coll1, $coll2, $join); break;
-                        case self::JOIN_OUTER   : $stack[] = self::outerJoin($coll1, $coll2, $join); break;
-                        case self::JOIN_LEFT    : $stack[] = self::leftJoin ($coll1, $coll2, $join); break;
-                        case self::JOIN_RIGHT   : $stack[] = self::rightJoin($coll1, $coll2, $join); break;
-                    }
+                    $stack[] = self::generalJoin($coll1, $coll2, $join['parent_key'], $join['child_key'], $join['type']);
                     
                     $join = next($this->_collection_joins);
                 }
@@ -254,129 +249,44 @@ class Lightning_Collection implements Iterator
         return $result;
     }
     
-    public static function innerJoin($coll1, $coll2, $join)
+    public static function generalJoin($left_collection, $right_collection, $left_key, $right_key, $type)
     {
+        $result_collection_class    = get_class($left_collection);
+        $result                     = new $result_collection_class();
         
-        $result_collection_class = get_class($coll1);
-        $result = new $result_collection_class();
+        $loop_is_left = $left_collection->count() >= $right_collection->count();
         
-        if($coll1->count() < $coll2->count()){
-            $loop_key = $join['child_key'];
-            $index_key = $join['parent_key'];
-            $indexed_set = self::indexCollection($coll1, $index_key);
-            $loop_set    = $coll2;
-            $loop_is_left = false;
-        }else{
-            $loop_key = $join['parent_key'];
-            $index_key = $join['child_key'];
-            $indexed_set = self::indexCollection($coll2, $index_key);
-            $loop_set    = $coll1;
-            $loop_is_left = true;
-        }
+        $loop_key           = $loop_is_left ? $left_key         : $right_key;
+        $index_key          = $loop_is_left ? $right_key        : $left_key;
+        $loop_collection    = $loop_is_left ? $left_collection  : $right_collection;
+        $indexed_collection = $loop_is_left ? $right_collection : $left_collection;
+        $null_left          = ($loop_is_left && $type == self::JOIN_LEFT)  || (!$loop_is_left && $type == self::JOIN_RIGHT) || $type == self::JOIN_OUTER;
+        $null_right         = ($loop_is_left && $type == self::JOIN_RIGHT) || (!$loop_is_left && $type == self::JOIN_LEFT)  || $type == self::JOIN_OUTER;
         
-        foreach($loop_set as $left_item){
-            if(array_key_exists($left_item->getValue($loop_key), $indexed_set)){
-                foreach($indexed_set[$left_item->getValue($loop_key)]['items'] as $right_item){
+        $indexed_set = self::indexCollection($indexed_collection, $index_key);
+        
+        foreach($loop_collection as $loop_item){
+            if(array_key_exists($loop_item->getValue($loop_key), $indexed_set)){
+                foreach($indexed_set[$loop_item->getValue($loop_key)]['items'] as $indexed_item){
+                    $indexed_set[$loop_item->getValue($loop_key)]['used'] = true;
                     if($loop_is_left){
-                        $result->addNewItem(array_merge($coll2->getItem($right_item)->getData(), $left_item->getData()));
+                        $result->addNewItem(array_merge($right_collection->getItem($indexed_item)->getData(), $loop_item->getData()));
                     }else{
-                        $result->addNewItem(array_merge($left_item->getData(), $coll1->getItem($right_item)->getData()));
-                    }
-                }
-            }
-        }
-        
-        return $result;
-    }
-    
-    public static function outerJoin($coll1, $coll2, $join)
-    {
-        $result_collection_class = get_class($coll1);
-        $result = new $result_collection_class();
-        
-        if($coll1->count() < $coll2->count()){
-            $loop_key = $join['child_key'];
-            $index_key = $join['parent_key'];
-            $indexed_set = self::indexCollection($coll1, $index_key);
-            $loop_set    = $coll2;
-            $loop_is_left = false;
-        }else{
-            $loop_key = $join['parent_key'];
-            $index_key = $join['child_key'];
-            $indexed_set = self::indexCollection($coll2, $index_key);
-            $loop_set    = $coll1;
-            $loop_is_left = true;
-        }
-        
-        foreach($loop_set as $left_item){
-            if(array_key_exists($left_item->getValue($loop_key), $indexed_set)){
-                foreach($indexed_set[$left_item->getValue($loop_key)]['items'] as $right_item){
-                    $indexed_set[$left_item->getValue($loop_key)]['used'] = true;
-                    if($loop_is_left){
-                        $result->addNewItem(array_merge($coll2->getItem($right_item)->getData(), $left_item->getData()));
-                    }else{
-                        $result->addNewItem(array_merge($left_item->getData(), $coll1->getItem($right_item)->getData()));
+                        $result->addNewItem(array_merge($loop_item->getData(), $left_collection->getItem($indexed_item)->getData()));
                     }
                 }
             }else{
-                $result->addNewItem($left_item->getData());
-            }
-        }
-        
-        $collection = $loop_is_left ? $coll2 : $coll1;
-        
-        foreach ($indexed_set as $index){
-            if(!$index['used']){
-                foreach($index['items'] as $item){
-                    $result->addNewItem($collection->getItem($item)->getData());
+                if($null_left){
+                    $result->addNewItem($loop_item->getData());
                 }
             }
         }
-        
-        return $result;
-    }
-    
-    public static function leftJoin($coll1, $coll2, $join)
-    {
-        $result_collection_class = get_class($coll1);
-        $result = new $result_collection_class();
-        
-        if($coll1->count() < $coll2->count()){
-            $loop_key = $join['child_key'];
-            $index_key = $join['parent_key'];
-            $indexed_set = self::indexCollection($coll1, $index_key);
-            $loop_set    = $coll2;
-            $loop_is_left = false;
-        }else{
-            $loop_key = $join['parent_key'];
-            $index_key = $join['child_key'];
-            $indexed_set = self::indexCollection($coll2, $index_key);
-            $loop_set    = $coll1;
-            $loop_is_left = true;
-        }
-        
-        foreach($loop_set as $left_item){
-            if(array_key_exists($left_item->getValue($loop_key), $indexed_set)){
-                foreach($indexed_set[$left_item->getValue($loop_key)]['items'] as $right_item){
-                    $indexed_set[$left_item->getValue($loop_key)]['used'] = true;
-                    if($loop_is_left){
-                        $result->addNewItem(array_merge($coll2->getItem($right_item)->getData(), $left_item->getData()));
-                    }else{
-                        $result->addNewItem(array_merge($left_item->getData(), $coll1->getItem($right_item)->getData()));
-                    }
-                }
-            }else{
-                if($loop_is_left){
-                    $result->addNewItem($left_item->getData());
-                }
-            }
-        }
-        
-        if(!$loop_is_left){
+                        
+        if($null_right){
             foreach ($indexed_set as $index){
                 if(!$index['used']){
                     foreach($index['items'] as $item){
-                        $result->addNewItem($coll1->getItem($item)->getData());
+                        $result->addNewItem($indexed_collection->getItem($item)->getData());
                     }
                 }
             }
@@ -384,56 +294,6 @@ class Lightning_Collection implements Iterator
         
         return $result;
     }
-    
-    public static function rightJoin($coll1, $coll2, $join)
-    {
-        $result_collection_class = get_class($coll1);
-        $result = new $result_collection_class();
-        
-        if($coll1->count() < $coll2->count()){
-            $loop_key = $join['child_key'];
-            $index_key = $join['parent_key'];
-            $indexed_set = self::indexCollection($coll1, $index_key);
-            $loop_set    = $coll2;
-            $loop_is_left = false;
-        }else{
-            $loop_key = $join['parent_key'];
-            $index_key = $join['child_key'];
-            $indexed_set = self::indexCollection($coll2, $index_key);
-            $loop_set    = $coll1;
-            $loop_is_left = true;
-        }
-        
-        foreach($loop_set as $left_item){
-            if(array_key_exists($left_item->getValue($loop_key), $indexed_set)){
-                foreach($indexed_set[$left_item->getValue($loop_key)]['items'] as $right_item){
-                    $indexed_set[$left_item->getValue($loop_key)]['used'] = true;
-                    if($loop_is_left){
-                        $result->addNewItem(array_merge($coll2->getItem($right_item)->getData(), $left_item->getData()));
-                    }else{
-                        $result->addNewItem(array_merge($left_item->getData(), $coll1->getItem($right_item)->getData()));
-                    }
-                }
-            }else{
-                if(!$loop_is_left){
-                    $result->addNewItem($left_item->getData());
-                }
-            }
-        }
-        
-        if($loop_is_left){
-            foreach ($indexed_set as $index){
-                if(!$index['used']){
-                    foreach($index['items'] as $item){
-                        $result->addNewItem($coll2->getItem($item)->getData());
-                    }
-                }
-            }
-        }
-        
-        return $result;
-    }
-
 
     // Iterator interface methods
     
