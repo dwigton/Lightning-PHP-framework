@@ -3,17 +3,14 @@ class Lightning_Model
 {
     protected $_data = array();
     protected $_collection_type = "Lightning_Model";
-    protected $_sub_collections = array();
     protected $_keys = array();
     
-    
-
     public function getData()
     {
         return $this->_data;
     }
     
-    public function getKey($key)
+    public function getValue($key)
     {
         if($this->hasKey($key)){
             return $this->_data[$key];
@@ -35,7 +32,7 @@ class Lightning_Model
         return $this;
     }
     
-    public function setKey($key, $value)
+    public function setValue($key, $value)
     {
         $this->_data[$key] = $value;
         return $this;

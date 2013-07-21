@@ -55,6 +55,7 @@ class Lightning_View{
     
     public function render($variable_array = false)
     {
+        Lightning_Event::raiseEvent('lightning_view_render', array('view'=>$this));
         if(is_array($variable_array)){
             $this->_var = array_merge($this->_var, $variable_array);
         }

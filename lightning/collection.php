@@ -7,20 +7,17 @@ class Lightning_Collection implements Iterator
     protected $_filter_operations   = array();
     protected $_keys                = array();
     protected $_collections         = array();
+    protected $_collection_joins    = array();
     
     protected $_filtered    = true;
-    
-    const JOIN_OUTER        = 1;
-    const JOIN_INNER        = 2;
-    const JOIN_LEFT_OUTER   = 3;
-    const JOIN_LEFT_INNER   = 4;
-    const JOIN_RIGHT_OUTER  = 5;
-    const JOIN_RIGHT_INNER  = 6;
-    
-    public function getNewItem()
-    {
-        return new $this->_item_type();
-    }
+    protected $_flattened   = true;
+    protected $_flatten_running = false;
+    protected $_keys_set = false;
+
+    const JOIN_OUTER    = 'outer';
+    const JOIN_INNER    = 'inner';
+    const JOIN_LEFT     = 'left';
+    const JOIN_RIGHT    = 'right';
     
     public function setItemType(Lightning_Model $type)
     {
@@ -35,22 +32,78 @@ class Lightning_Collection implements Iterator
     
     public function addItem(Lightning_Model $item)
     {
+        if(!$this->_keys_set){
+            foreach ($item->getData() as $key=>$data){
+                $this->_keys[$key] = $key;
+            }
+        }
         $this->_items[] = $item;
         return $this;
     }
     
+    public function addNewItem($data)
+    {
+        $item = $this->getNewItem();
+        $item->setData($data);
+        $this->addItem($item);
+        return $this;
+    }
+    
+    public function getNewItem()
+    {
+        return new $this->_item_type();
+    }
+    
+    public function count()
+    {
+        $this->flattenCollection();
+        return count($this->_items);
+    }
+    
+    public function getItemKeys()
+    {
+        $this->flattenCollection();
+        return $this->_keys;
+    }
+    
+    public function setItemKeys($key_array){
+        $this->_keys = $key_array;
+        $this->_keys_set = true;
+        return $this;
+    }
+    
+    public function getItems()
+    {
+        $this->flattenCollection();
+        return $this->_items;
+    }
+    
+    public function getItem($index)
+    {
+        $this->flattenCollection();
+        return $this->_items[$index];
+    }
+    
     // Data manipulation functions
     
-    public function filter($key, $comp, $value)
-    {
+    public function addFilter($key, $comp, $value, $is_value_field = false)
+    {        
         $this->_filters[] = array(
-            'key'       => $key,
-            'comp'      => $comp,
-            'value'     => $value
+            'key'               => $key,
+            'comp'              => $comp,
+            'value'             => $value,
+            'is_value_field'    => $is_value_field
         );
         
         $this->_filtered = false;
         
+        return $this;
+    }
+    
+    public function operate($type)
+    {
+        end($this->_filters);
+        $this->_filter_operations[] = array('index' => key($this->_filters), 'type' => $type); 
         return $this;
     }
     
@@ -64,11 +117,11 @@ class Lightning_Collection implements Iterator
             foreach($this->_items as $item){
                 reset($this->_filter_operations);
                 $stack = array();
-                foreach($this->_filters as $key => $filter){
-                    array_push($stack, $this->_evaluateFilter($filter, $item));
+                foreach($this->_filters as $index => $filter){
+                    array_push($stack, self::evaluateFilter($filter, $item));
                     $operation = current($this->_filter_operations);
 
-                    while($operation && $operation['key'] == $key){
+                    while($operation && $operation['index'] == $index){
 
                         switch($operation['type']){
                             case 'and'  : if(count($stack) < 2){throw new Exception("Too few items in RPN stack");}
@@ -104,76 +157,290 @@ class Lightning_Collection implements Iterator
         return $this;
     }
     
-    protected function _evaluateFilter($filter, $item)
+    public static function evaluateFilter($filter, $item)
     {
         if($item->hasKey($filter['key'])){
-            switch($filter['comp']){
-                case 'eq'   : return $item->getKey($filter['key']) == $filter['value']; break; 
-                case 'neq'  : return $item->getKey($filter['key']) != $filter['value']; break; 
-                case 'gt'   : return $item->getKey($filter['key']) > $filter['value']; break; 
-                case 'gteq' : return $item->getKey($filter['key']) >= $filter['value']; break; 
-                case 'lt'   : return $item->getKey($filter['key']) < $filter['value']; break; 
-                case 'lteq' : return $item->getKey($filter['key']) <= $filter['value']; break; 
-                case 'in'   : return in_array($item->getKey($filter['key']), $filter['value']); break; 
-                case 'like' : return preg_match($filter['value'], $item->getKey($filter['key'])); break;
-            }
+            $arg = $filter['is_value_field'] ? $item->getValue($filter['value']) : $filter['value'];
+            return self::compareValues($item->getValue($filter['key']), $filter['comp'], $arg);
+        }else{
+            return false;
         }
     }
     
-    public function operate($type)
+    public static function compareValues($left, $comp, $right){
+        switch($comp){
+            case 'eq'   : return $left == $right; break; 
+            case 'neq'  : return $left != $right; break; 
+            case 'gt'   : return $left >  $right; break; 
+            case 'gteq' : return $left >= $right; break; 
+            case 'lt'   : return $left <  $right; break; 
+            case 'lteq' : return $left <= $right; break; 
+            case 'in'   : return in_array($left, $right); break; 
+            case 'like' : return preg_match($right, $left); break;
+            default: throw new Exception('Comparison operator not recognized');
+        }
+    }
+
+
+    public function addCollection($collection)
     {
-        end($this->_filters);
-        $this->_filter_operations[] = array('key' => key($this->_filters), 'type' => $type); 
+        $this->_collections[] = $collection;
+        $this->_flattened = false;
         return $this;
     }
     
-    public function joinCollection($alias, $collection, $foreign_key_array, $condition_array, $key_array, $available_keys, $join_type = self::JOIN_OUTER)
+    public function join($parent_key, $child_key, $type = self::JOIN_INNER)
     {
-        $this->_collections[$alias] = array(
-            'type'              => $join_type,
-            'collection'        => $collection,
-            'foreign_keys'      => $foreign_key_array,
-            'conditions'        => $condition_array,
-            'keys'              => $key_array,
-            'available_keys'    => $available_keys
-        );
+        end($this->_collections);
+        $this->_collection_joins[] = array(
+                    'index'         => key($this->_collections),
+                    'type'          => $type,
+                    'parent_key'    => $parent_key,
+                    'child_key'     => $child_key
+                );
+        return $this;
     }
     
     public function flattenCollection()
     {
-        if(!$this->_is_flattened){
-            foreach ($this->_sub_collections as $join){
-                $join['collection']->flattenCollection();
-                $new_data = array();
-                
-                foreach($join['collection'] as $item){
-                    foreach($this->_data as $data){
-                        $this->_joinRow($data, $item, $join);
+        if(!$this->_flattened && !$this->_flatten_running){
+            $this->_flatten_running = true;
+            $stack = array($this);
+            reset($this->_collection_joins);
+            foreach ($this->_collections as $index=>$collection){
+                $stack[] = $collection;
+                $join = current($this->_collection_joins);
+                while($join && $join['index'] == $index){
+                    
+                    if(count($stack) < 2){ throw new Exception('Too few collections in stack to perform join'); }
+                    $coll2 = array_pop($stack);
+                    $coll1 = array_pop($stack);
+                    
+                    switch($join['type']){
+                        case self::JOIN_INNER   : $stack[] = self::innerJoin($coll1, $coll2, $join); break;
+                        case self::JOIN_OUTER   : $stack[] = self::outerJoin($coll1, $coll2, $join); break;
+                        case self::JOIN_LEFT    : $stack[] = self::leftJoin ($coll1, $coll2, $join); break;
+                        case self::JOIN_RIGHT   : $stack[] = self::rightJoin($coll1, $coll2, $join); break;
+                    }
+                    
+                    $join = next($this->_collection_joins);
+                }
+            }
+            $new = array_pop($stack);
+            $this->_items = $new->getItems();
+            if(!$this->_keys_set){
+                $this->_keys = $new->getItemKeys();
+            }            
+            $this->_flattened = true;
+            $this->_flatten_running = false;
+            $this->applyFilters();
+        }
+        
+        return $this;
+    }
+    
+    public static function indexCollection($collection, $key)
+    {
+        $result = array();
+        
+        foreach($collection as $row=>$item){
+            if(array_key_exists($item->getValue($key), $result)){
+                $result[$item->getValue($key)]['items'][] = $row;
+            }else{
+                $result[$item->getValue($key)] = array('items'=>array($row), 'used'=>false);
+            }
+        }
+        
+        return $result;
+    }
+    
+    public static function innerJoin($coll1, $coll2, $join)
+    {
+        
+        $result_collection_class = get_class($coll1);
+        $result = new $result_collection_class();
+        
+        if($coll1->count() < $coll2->count()){
+            $loop_key = $join['child_key'];
+            $index_key = $join['parent_key'];
+            $indexed_set = self::indexCollection($coll1, $index_key);
+            $loop_set    = $coll2;
+            $loop_is_left = false;
+        }else{
+            $loop_key = $join['parent_key'];
+            $index_key = $join['child_key'];
+            $indexed_set = self::indexCollection($coll2, $index_key);
+            $loop_set    = $coll1;
+            $loop_is_left = true;
+        }
+        
+        foreach($loop_set as $left_item){
+            if(array_key_exists($left_item->getValue($loop_key), $indexed_set)){
+                foreach($indexed_set[$left_item->getValue($loop_key)]['items'] as $right_item){
+                    if($loop_is_left){
+                        $result->addNewItem(array_merge($coll2->getItem($right_item)->getData(), $left_item->getData()));
+                    }else{
+                        $result->addNewItem(array_merge($left_item->getData(), $coll1->getItem($right_item)->getData()));
                     }
                 }
             }
         }
         
-        $this->_is_flattened = true;
+        return $result;
     }
     
-    protected function _joinRow($local_row, $foreign_row, $join)
+    public static function outerJoin($coll1, $coll2, $join)
     {
-        switch($join['type']){
-            case self::JOIN_OUTER       : if(true){;} break;
-            case self::JOIN_INNER       : break;
-            case self::JOIN_LEFT_OUTER  : break;
-            case self::JOIN_LEFT_INNER  : break;
-            case self::JOIN_RIGHT_OUTER : break;
-            case self::JOIN_RIGHT_INNER : break;
+        $result_collection_class = get_class($coll1);
+        $result = new $result_collection_class();
+        
+        if($coll1->count() < $coll2->count()){
+            $loop_key = $join['child_key'];
+            $index_key = $join['parent_key'];
+            $indexed_set = self::indexCollection($coll1, $index_key);
+            $loop_set    = $coll2;
+            $loop_is_left = false;
+        }else{
+            $loop_key = $join['parent_key'];
+            $index_key = $join['child_key'];
+            $indexed_set = self::indexCollection($coll2, $index_key);
+            $loop_set    = $coll1;
+            $loop_is_left = true;
         }
+        
+        foreach($loop_set as $left_item){
+            if(array_key_exists($left_item->getValue($loop_key), $indexed_set)){
+                foreach($indexed_set[$left_item->getValue($loop_key)]['items'] as $right_item){
+                    $indexed_set[$left_item->getValue($loop_key)]['used'] = true;
+                    if($loop_is_left){
+                        $result->addNewItem(array_merge($coll2->getItem($right_item)->getData(), $left_item->getData()));
+                    }else{
+                        $result->addNewItem(array_merge($left_item->getData(), $coll1->getItem($right_item)->getData()));
+                    }
+                }
+            }else{
+                $result->addNewItem($left_item->getData());
+            }
+        }
+        
+        $collection = $loop_is_left ? $coll2 : $coll1;
+        
+        foreach ($indexed_set as $index){
+            if(!$index['used']){
+                foreach($index['items'] as $item){
+                    $result->addNewItem($collection->getItem($item)->getData());
+                }
+            }
+        }
+        
+        return $result;
     }
     
+    public static function leftJoin($coll1, $coll2, $join)
+    {
+        $result_collection_class = get_class($coll1);
+        $result = new $result_collection_class();
+        
+        if($coll1->count() < $coll2->count()){
+            $loop_key = $join['child_key'];
+            $index_key = $join['parent_key'];
+            $indexed_set = self::indexCollection($coll1, $index_key);
+            $loop_set    = $coll2;
+            $loop_is_left = false;
+        }else{
+            $loop_key = $join['parent_key'];
+            $index_key = $join['child_key'];
+            $indexed_set = self::indexCollection($coll2, $index_key);
+            $loop_set    = $coll1;
+            $loop_is_left = true;
+        }
+        
+        foreach($loop_set as $left_item){
+            if(array_key_exists($left_item->getValue($loop_key), $indexed_set)){
+                foreach($indexed_set[$left_item->getValue($loop_key)]['items'] as $right_item){
+                    $indexed_set[$left_item->getValue($loop_key)]['used'] = true;
+                    if($loop_is_left){
+                        $result->addNewItem(array_merge($coll2->getItem($right_item)->getData(), $left_item->getData()));
+                    }else{
+                        $result->addNewItem(array_merge($left_item->getData(), $coll1->getItem($right_item)->getData()));
+                    }
+                }
+            }else{
+                if($loop_is_left){
+                    $result->addNewItem($left_item->getData());
+                }
+            }
+        }
+        
+        if(!$loop_is_left){
+            foreach ($indexed_set as $index){
+                if(!$index['used']){
+                    foreach($index['items'] as $item){
+                        $result->addNewItem($coll1->getItem($item)->getData());
+                    }
+                }
+            }
+        }
+        
+        return $result;
+    }
+    
+    public static function rightJoin($coll1, $coll2, $join)
+    {
+        $result_collection_class = get_class($coll1);
+        $result = new $result_collection_class();
+        
+        if($coll1->count() < $coll2->count()){
+            $loop_key = $join['child_key'];
+            $index_key = $join['parent_key'];
+            $indexed_set = self::indexCollection($coll1, $index_key);
+            $loop_set    = $coll2;
+            $loop_is_left = false;
+        }else{
+            $loop_key = $join['parent_key'];
+            $index_key = $join['child_key'];
+            $indexed_set = self::indexCollection($coll2, $index_key);
+            $loop_set    = $coll1;
+            $loop_is_left = true;
+        }
+        
+        foreach($loop_set as $left_item){
+            if(array_key_exists($left_item->getValue($loop_key), $indexed_set)){
+                foreach($indexed_set[$left_item->getValue($loop_key)]['items'] as $right_item){
+                    $indexed_set[$left_item->getValue($loop_key)]['used'] = true;
+                    if($loop_is_left){
+                        $result->addNewItem(array_merge($coll2->getItem($right_item)->getData(), $left_item->getData()));
+                    }else{
+                        $result->addNewItem(array_merge($left_item->getData(), $coll1->getItem($right_item)->getData()));
+                    }
+                }
+            }else{
+                if(!$loop_is_left){
+                    $result->addNewItem($left_item->getData());
+                }
+            }
+        }
+        
+        if($loop_is_left){
+            foreach ($indexed_set as $index){
+                if(!$index['used']){
+                    foreach($index['items'] as $item){
+                        $result->addNewItem($coll2->getItem($item)->getData());
+                    }
+                }
+            }
+        }
+        
+        return $result;
+    }
+
+
     // Iterator interface methods
     
     public function rewind()
     {
-        $this->applyFilters();
+        $this->flattenCollection();
+             
         reset($this->_items);
     }
   

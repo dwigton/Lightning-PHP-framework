@@ -1,0 +1,257 @@
+<?php
+class Lightning_Collection implements Iterator
+{
+    protected $_item_type           = "Lightning_Model";
+    protected $_items               = array();
+    protected $_filters             = array();
+    protected $_filter_operations   = array();
+    protected $_keys                = array();
+    protected $_collections         = array();
+    protected $_collection_joins    = array();
+    
+    protected $_filtered    = true;
+    protected $_flattened   = true;
+
+    const JOIN_OUTER    = 'outer';
+    const JOIN_INNER    = 'inner';
+    const JOIN_LEFT     = 'left';
+    const JOIN_RIGHT    = 'right';
+    
+    public function setItemType(Lightning_Model $type)
+    {
+        $this->_item_type = $type;   
+        return $this;
+    }
+    
+    public function getItemType()
+    {
+        return $this->_item_type;
+    }
+    
+    public function addItem(Lightning_Model $item)
+    {
+        foreach ($item->getData() as $key=>$data){
+            $this->_keys[$key] = $key;
+        }
+        $this->_items[] = $item;
+        return $this;
+    }
+    
+    public function addNewItem($data)
+    {
+        $item = $this->getNewItem();
+        $item->setData($data);
+        $this->addItem($item);
+        return $this;
+    }
+    
+    public function getNewItem()
+    {
+        return new $this->_item_type();
+    }
+    
+    public function getItemKeys()
+    {
+        return $this->_keys;
+    }
+    
+    // Data manipulation functions
+    
+    public function addFilter($key, $comp, $value, $is_value_field = false)
+    {        
+        $this->_filters[] = array(
+            'key'               => $key,
+            'comp'              => $comp,
+            'value'             => $value,
+            'is_value_field'    => $is_value_field
+        );
+        
+        $this->_filtered = false;
+        
+        return $this;
+    }
+    
+    public function operate($type)
+    {
+        end($this->_filters);
+        $this->_filter_operations[] = array('index' => key($this->_filters), 'type' => $type); 
+        return $this;
+    }
+    
+    /*
+     *  Applies Filters in RPN fashion
+     */
+    public function applyFilters()
+    {
+        if(!$this->_filtered){
+            $result = array();
+            foreach($this->_items as $item){
+                reset($this->_filter_operations);
+                $stack = array();
+                foreach($this->_filters as $index => $filter){
+                    array_push($stack, self::evaluateFilter($filter, $item));
+                    $operation = current($this->_filter_operations);
+
+                    while($operation && $operation['index'] == $index){
+
+                        switch($operation['type']){
+                            case 'and'  : if(count($stack) < 2){throw new Exception("Too few items in RPN stack");}
+                                            $arg1 = array_pop($stack);
+                                            $arg2 = array_pop($stack);
+                                            array_push($stack, $arg1 && $arg2); break;
+                            case 'or'   : if(count($stack) < 2){throw new Exception("Too few items in RPN stack");}
+                                            $arg1 = array_pop($stack);
+                                            $arg2 = array_pop($stack);
+                                            array_push($stack, $arg1 || $arg2); break;
+                            case 'not'  : if(count($stack) < 1){throw new Exception("Too few items in RPN stack");}
+                                            array_push($stack, ! array_pop($stack)); break;
+                            default     : break;
+                        }
+                        $operation = next($this->_filter_operations);
+                    }
+
+                    if(!$operation && count($stack) > 1){
+                        throw new Exception('Too few filter operations');
+                    }
+                }
+                if(next($this->_filter_operations)){
+                    throw new Exception('Too many filter operations');
+                }
+                if(array_pop($stack)){
+                    $result[] = $item;
+                }
+            }
+
+            $this->_items = $result;
+            $this->_filtered = true;
+        }
+        return $this;
+    }
+    
+    public static function evaluateFilter($filter, $item)
+    {
+        if($item->hasKey($filter['key'])){
+            $arg = $filter['is_value_field'] ? $item->getValue($filter['value']) : $filter['value'];
+            return self::compareValues($item->getValue($filter['key']), $filter['comp'], $arg);
+        }else{
+            throw new Exception('Filter has incorrect data format.');
+        }
+    }
+    
+    public static function compareValues($left, $comp, $right){
+        switch($comp){
+            case 'eq'   : return $left == $right; break; 
+            case 'neq'  : return $left != $right; break; 
+            case 'gt'   : return $left >  $right; break; 
+            case 'gteq' : return $left >= $right; break; 
+            case 'lt'   : return $left <  $right; break; 
+            case 'lteq' : return $left <= $right; break; 
+            case 'in'   : return in_array($left, $right); break; 
+            case 'like' : return preg_match($right, $left); break;
+        }
+    }
+
+
+    public function addCollection($alias, $collection)
+    {
+        $this->_collections[$alias] = $collection;
+        return $this;
+    }
+    
+    public function join($type, $parent_key, $comp, $child_key)
+    {
+        end($this->_collections);
+        $this->_collection_joins[] = array(
+                    'index'         => key($this->_collections),
+                    'type'          => $type,
+                    'parent_key'    => $parent_key,
+                    'comp'          => $comp,
+                    'child_key'     => $child_key
+                );
+        return $this;
+    }
+    
+    public function flattenCollection()
+    {
+        if(!$this->_flattened){
+            $stack = array($this);
+            reset($this->_collection_joins);
+            foreach ($this->_collections as $index=>$collection){
+                $stack[] = $collection;
+                $join = current($this->_collection_joins);
+                while($join && $join['index'] == $index){
+                    
+                    if(count($stack) < 2){ throw new Exception('Too few collections in stack to perform join'); }
+                    $coll1 = array_pop($stack);
+                    $coll2 = array_pop($stack);
+                    
+                    switch($join['type']){
+                        case self::JOIN_INNER   : $stack[] = $this->_inner_join($coll1, $coll2, $join); break;
+                        case self::JOIN_OUTER   : $stack[] = $this->_outer_join($coll1, $coll2, $join); break;
+                        case self::JOIN_LEFT    : $stack[] = $this->_left_join($coll1, $coll2, $join); break;
+                        case self::JOIN_RIGHT   : $stack[] = $this->_right_join($coll1, $coll2, $join); break;
+                    }
+                }
+            }
+        }
+        
+        $this->_is_flattened = true;
+    }
+    
+    protected function _inner_join($coll1, $coll2, $join)
+    {
+        $result_collection_class = get_class($coll1);
+        $result = new $result_collection_class();
+        foreach($coll1 as $left_item){
+            foreach($coll2 as $right_item){
+                
+            }
+        }
+    }
+    
+    protected function _outer_join($coll1, $coll2, $join)
+    {
+        
+    }
+    
+    protected function _left_join($coll1, $coll2, $join)
+    {
+        
+    }
+    
+    protected function _right_join($coll1, $coll2, $join)
+    {
+        
+    }
+
+
+    // Iterator interface methods
+    
+    public function rewind()
+    {
+        $this->applyFilters();
+        reset($this->_items);
+    }
+  
+    public function current()
+    {
+        return current($this->_items);
+    }
+  
+    public function key() 
+    {
+        return key($this->_items);
+    }
+  
+    public function next() 
+    {
+        return next($this->_items);
+    }
+  
+    public function valid()
+    {
+        $key = key($this->_items);
+        $var = ($key !== NULL && $key !== FALSE);
+        return $var;
+    }
+}

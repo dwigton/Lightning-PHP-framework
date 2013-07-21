@@ -87,6 +87,14 @@ class App
             mkdir(ROOT_PATH."/var/log");
         }
         $fp = fopen(ROOT_PATH."/var/log/$log_file", 'a');
+        
+        if(!is_string($message)){
+            ob_start();
+            var_dump($message);
+            $message = ob_get_clean();
+            //$message = var_export($message, true);
+        }
+        
         fwrite($fp, "$message\n");
         fclose($fp);
     }
