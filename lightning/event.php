@@ -1,27 +1,34 @@
 <?php
 
-class Lightning_Event {
+class Lightning_Event
+{
     
-    private static $_observers = array();
+    private static $observers = array();
     
-    public static function addObserver($event_name, $file_name, $class, $function, $stop_processing = FALSE)
+    public static function addObserver($event_name, $file_name, $class, $function, $stop_processing = false)
     {
-        self::$_observers[] = array('name'=>$event_name, 'file'=>$file_name, 'class'=>$class, 'function'=>$function, 'stop' => $stop_processing);
+        self::$observers[] = array(
+            'name' => $event_name,
+            'file' => $file_name,
+            'class' => $class,
+            'function' => $function,
+            'stop' => $stop_processing
+        );
     }
     
     public static function raiseEvent($event_name, $data = array())
     {
-        foreach(self::$_observers as $observer){
-            if($event_name == $observer['name'] && file_exists($observer['file'])){
+        foreach (self::$observers as $observer) {
+            if ($event_name == $observer['name'] && file_exists($observer['file'])) {
                 include_once $observer['file'];
-                if(class_exists($observer['class'])){
+                if (class_exists($observer['class'])) {
                     $observer_class = new $observer['class']();
                     $observer_class->$observer['function']($data);
-                    if($observer['stop']){ return; }
+                    if ($observer['stop']) {
+                        return;
+                    }
                 }
             }
         }
     }
 }
-
-?>

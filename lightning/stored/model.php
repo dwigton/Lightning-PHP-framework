@@ -1,11 +1,11 @@
 <?php
 class Lightning_Stored_Model extends Lightning_Model
 {
-    protected $_source;
+    protected $source;
+    protected $adapter;
     
     public function __construct() {
-        $this->_collection_type = 'Lightning_Stored_Collection';
-        //$this->_adapter = new Li
+        $this->setCollectionType('Lightning_Stored_Collection');
     }
 
     public function load()
@@ -25,13 +25,29 @@ class Lightning_Stored_Model extends Lightning_Model
     
     public function setAdapter($adapter)
     {
-        $this->_adapter = $adapter;
+        $this->adapter = $adapter;
     }
     
     public function getAdapter()
     {
-        return $this->_adapter;
+        return $this->adapter;
     }
     
+    public function setSource($source)
+    {
+        $this->source = $source;
+    }
     
+    public function getSource(){
+        return $this->source;
+    }
+    
+    public function getCollection()
+    {
+        $collection = parent::getCollection();
+        $collection->setAdapter($this->getAdapter());
+        $collection->setSource($this->getSource());
+        
+        return $collection;
+    }
 }

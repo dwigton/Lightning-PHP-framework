@@ -1,12 +1,14 @@
 <?php
-/* Turn on error reporting for development */
+/*
+ *  Turn on error reporting for development.
+ */
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Include the App class
+// Include the App class.
 require_once 'lightning/app.php';
-// Adding a function to find all the base lightnining files
+// Adding a function to find all the base lightnining files.
 spl_autoload_register('loadLightning');
 
 // Set PROJECT_DIR to the part of the URI that points to this Lightning application
@@ -19,7 +21,7 @@ define('PROJECT_DIR', '/');
 define('BASE_URL', 'http://'.$_SERVER['HTTP_HOST'].PROJECT_DIR);
 
 // Trim 'REQUEST_URI' if index.php is not in the server's document root.
-define('URI', substr($_SERVER['REQUEST_URI'],strlen(PROJECT_DIR)-1));
+define('URI', substr($_SERVER['REQUEST_URI'], strlen(PROJECT_DIR) - 1));
 
 App::initRouter(URI);
 
@@ -37,14 +39,14 @@ ob_end_flush();
 function afterRender($html)
 {
     App::setBuffer($html);
-    Lightning_Event::raiseEvent('Render_Complete', array('html'=>$html));
+    Lightning_Event::raiseEvent('Render_Complete', array('html' => $html));
     return App::getBuffer();
 }
 
 function loadLightning($class_name)
 {
     $path = ROOT_PATH."/".strtolower(str_replace('_', '/', $class_name)).".php";
-    if(file_exists($path)){
+    if (file_exists($path)) {
         include $path;
     }
 }

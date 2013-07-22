@@ -26,7 +26,7 @@
  *  The following routes are an example of a single path setup where all the
  *  controllers are in one place.
  */
-    App::addRoute('', 'app/controllers/index_controller.php', 'Index_Controller_Class' , 'indexAction');
+    App::addRoute('', 'app/controllers/index_controller.php', 'Index_Controller_Class', 'indexAction');
     App::addRoute('[a-z]+', 'app/controllers/index_controller.php', 'Index_Controller_Class', '#1Action');
     App::addRoute('[a-z]+', 'app/controllers/#1_controller.php', '#1\U_Controller_Class', 'indexAction');
     App::addRoute('[a-z]+/[a-z]+', 'app/controllers/#1_controller.php', '#1\U_Controller_Class', '#2Action');
@@ -35,7 +35,7 @@
  *  The following routes are an example of a modular setup where each module
  *  contains its own controllers.
  */
-    App::addRoute('', 'modules/base/controllers/index_controller.php', 'Base_Index_Controller_Class' , 'indexAction');
+    App::addRoute('', 'modules/base/controllers/index_controller.php', 'Base_Index_Controller_Class', 'indexAction');
     App::addRoute('[a-z]+', 'modules/base/modules/controllers/index_controller.php', 'Base_Index_Controller_Class', '#1Action');
     App::addRoute('[a-z]+', 'modules/base/modules/controllers/#1_controller.php', 'Base_#1\U_Controller_Class', 'indexAction');
     App::addRoute('[a-z]+', 'modules/#1/controllers/index_controller.php', '#1\U_Index_Controller_Class', 'indexAction');
@@ -68,8 +68,8 @@
 * 
 */
 
-    App::addModule('modules/base/config.php','Base_Module_Config','config');
-    App::addModule('modules/output_formatter/config.php','Output_Formatter_Module_Config','config');
+    App::addModule('modules/base/config.php', 'Base_Module_Config', 'config');
+    App::addModule('modules/output_formatter/config.php', 'Output_Formatter_Module_Config', 'config');
 
 /* Add your modules here */
     App::addModule('modules/stonecottage_theme/config.php', 'StoneCottage_Theme_Config', 'config');
@@ -92,7 +92,7 @@
  *  By default stored models will use App::getDataSource("default") thus the
  *  application can be set to use any database or file system for its persistence
  *  layer by changing the following statement to use a different adapter.
- */    
+ */
     
 //    App::addDataSource('default', new Lightning_Stored_Adapter_Mysql(
 //                'localhost',
