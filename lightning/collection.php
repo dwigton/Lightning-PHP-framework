@@ -250,6 +250,7 @@ class Lightning_Collection implements Iterator
                     if (count($stack) < 2) {
                         throw new Exception('Too few collections in stack to perform join');
                     }
+                    
                     $coll2 = array_pop($stack);
                     $coll1 = array_pop($stack);
                     
@@ -264,11 +265,7 @@ class Lightning_Collection implements Iterator
                     $join = next($this->collection_joins);
                 }
             }
-            $new = array_pop($stack);
-            $this->items = $new->getItems();
-            if (!$this->keys_set) {
-                $this->keys = $new->getItemKeys();
-            }
+           
             $this->flattened = true;
             $this->flatten_running = false;
             $this->applyFilters();
@@ -349,7 +346,12 @@ class Lightning_Collection implements Iterator
             }
         }
         
-        return $result;
+        $left_collection->items = $result->getItems();
+        if (!$left_collection->keys_set) {
+            $left_collection->keys = $result->getItemKeys();
+        }
+        
+        return $left_collection;
     }
 
     // Iterator interface methods

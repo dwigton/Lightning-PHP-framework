@@ -1,8 +1,9 @@
 <?php
 class Lightning_Stored_Collection extends Lightning_Collection
 {
-    protected $_source;
-    protected $_adapter;
+    protected $source;
+    protected $adapter;
+    protected $collection_index;
     
     public function __construct() {
         $this->_item_type = 'Lightning_Stored_Model';
@@ -31,32 +32,40 @@ class Lightning_Stored_Collection extends Lightning_Collection
         return $item;
     }
     
-    public function join(Lightning_Stored_Collection $collection)
-    {
-        
-    }
-    
     public function setAdapter($adapter)
     {
-        $this->_adapter = $adapter;
+        $this->adapter = $adapter;
     }
     
     public function getAdapter()
     {
-        return $this->_adapter;
+        return $this->adapter;
     }
     
     public function setSource($source)
     {
-        $this->_source = $source;
+        $this->source = $source;
     }
     
     public function getSource(){
-        return $this->_source;
+        return $this->source;
+    }
+    
+    public function setCollectionIndex($index)
+    {
+        $this->collection_index = index;
+    }
+    
+    public function getCollectionIndex(){
+        return $this->collection_index;
     }
     
     public function collectionJoin($left_collection, $right_collection, $left_key, $right_key, $type)
     {
-        return $this->getAdapter()->collectionJoin($left_collection, $right_collection, $left_key, $right_key, $type);
+        return $this->getAdapter()->collectionJoin($this, $right_collection, $left_key, $right_key, $type);
+    }
+    
+    public function applyFilters() {
+        parent::applyFilters();
     }
 }

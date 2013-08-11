@@ -16,4 +16,6 @@ abstract class Lightning_Stored_Adapter_Abstract
     public abstract function updateBlock();
     
     public abstract function deleteBlock();
+
+    public abstract function collectionJoin($collection, $right_collection, $left_key, $right_key, $type);
 }
