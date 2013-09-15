@@ -1,37 +1,19 @@
 <?php
-class Lightning_Stored_Model extends Lightning_Model
+abstract class Lightning_Stored_Model extends Lightning_Model
 {
     protected $source;
-    protected $adapter;
     
     public function __construct() {
-        $this->setCollectionType('Lightning_Stored_Collection');
+        $this->_item_type = $this->getDefaultCollectionType();
     }
+    
+    abstract protected function getDefaultCollectionType();
 
-    public function load()
-    {
-        return false;
-    }
+    abstract public function load(array $keys);
     
-    public function save()
-    {
-        return false;
-    }
+    abstract public function save();
     
-    public function delete()
-    {
-        return false;
-    }
-    
-    public function setAdapter($adapter)
-    {
-        $this->adapter = $adapter;
-    }
-    
-    public function getAdapter()
-    {
-        return $this->adapter;
-    }
+    abstract public function delete();
     
     public function setSource($source)
     {
@@ -45,9 +27,7 @@ class Lightning_Stored_Model extends Lightning_Model
     public function getCollection()
     {
         $collection = parent::getCollection();
-        $collection->setAdapter($this->getAdapter());
         $collection->setSource($this->getSource());
-        
         return $collection;
     }
 }

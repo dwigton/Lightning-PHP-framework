@@ -4,6 +4,11 @@ class Lightning_Model
     protected $data = array();
     protected $collection_type = "Lightning_Model";
     protected $keys = array();
+    protected $adapter;
+    
+    public function __construct() {
+        $this->adapter = new Lightning_Adapter;
+    }
     
     public function getData()
     {
@@ -60,5 +65,15 @@ class Lightning_Model
         $collection->setItemType(get_class($this));
         
         return $collection;
+    }
+    
+    public function setAdapter($adapter)
+    {
+        $this->adapter = $adapter;
+    }
+    
+    public function getAdapter()
+    {
+        return $this->adapter;
     }
 }
