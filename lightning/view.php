@@ -5,7 +5,7 @@ class Lightning_View
     private $css_files = array();
     private $script_files = array();
     protected $var = array();
-    private $template_file_path;
+    protected $template_file_path;
     
     public function __construct($template_file_path)
     {
