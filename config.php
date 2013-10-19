@@ -94,9 +94,10 @@
  *  layer by changing the following statement to use a different adapter.
  */
     
-//    App::addDataSource('default', new Lightning_Stored_Adapter_Mysql(
-//                'localhost',
-//                'test',
-//                'user',
-//                'password'
-//            ));
+    App::addDataSource('default', new Lightning_Stored_Connection(
+                'localhost',
+                'user',
+                'password',
+                'test_database',
+                'Lightning_Mysql_Adapter'
+            ));
