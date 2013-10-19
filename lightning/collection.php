@@ -236,6 +236,11 @@ class Lightning_Collection implements Iterator
         return $this;
     }
     
+    public function is_flattened()
+    {
+        return $this->flattened;
+    }
+    
     public function flatten()
     {
         if (!$this->flattened && !$this->flatten_running) {
