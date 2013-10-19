@@ -68,7 +68,7 @@ class App
             $reflector = new ReflectionClass(self::$models[$handle]['class']);
             return $reflector->newInstanceArgs(array_slice(func_get_args(), 1));
         } else {
-            return new self::$_models[$handle]['class']();
+            return new self::$models[$handle]['class']();
         }
     }
     
