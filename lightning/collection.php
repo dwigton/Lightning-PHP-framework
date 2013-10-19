@@ -20,7 +20,7 @@ class Lightning_Collection implements Iterator
     const JOIN_LEFT     = 'left';
     const JOIN_RIGHT    = 'right';
     
-    public function setItemType(Lightning_Model $type)
+    public function setItemType($type)
     {
         $this->item_type = $type;
         return $this;
@@ -83,8 +83,27 @@ class Lightning_Collection implements Iterator
     public function getItem($index)
     {
         $this->flatten();
-        return $this->items[$index];
+        if(array_key_exists($index, $this->items)){
+            return $this->items[$index];
+        }else{
+            return $this->getNewItem();
+        }
     }
+    
+    public function getValues($key)
+    {
+        $output = array();
+        foreach ($this->items as $item) {
+            $output[] = $item->getValue($key);
+        }
+        return $output;
+    }
+    
+    public function clear()
+    {
+        $this->items = array();
+    }
+    
     
     // Data manipulation functions
     
@@ -273,6 +292,9 @@ class Lightning_Collection implements Iterator
            
             $this->flattened = true;
             $this->flatten_running = false;
+        }
+        
+        if(!$this->flatten_running){
             $this->applyFilters();
         }
         
