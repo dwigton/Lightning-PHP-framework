@@ -3,16 +3,16 @@ to be useful in instructing, beginners to PHP MVC frameworks, on the design
 considerations required in a more advanced framework.
 
 A PHP developer of moderate ability should be able to get started with 
-Lightning merely by glancing through the routes.php file and the
-lightning/lightning_view_base.php files.
+Lightning merely by glancing through the config.php file and the
+lightning/view.php files.
 
 Lightning does not want to impose any particular document structure on its
 users and as such controllers and views can be organized in anyway desired.
 Classes and functions can also follow any naming pattern desired. There are some
 defaults for testing but the developer can make any change they like to 
-routes.php.
+config.php.
 
 Modularity and event observer registering can be accomplished by editing
-modules.php. While it is good practice to use some sort of convention throutout
+config.php. While it is good practice to use some sort of convention throughout
 a project, no particular file structure is imposed by the module system. 
 Lightning merely makes it easy for the programmer to build their own structure.

@@ -26,16 +26,15 @@ ini_set('display_errors', 1);
 *   The Lightning_Router class will choose the last matching route added. Thus it
 *   is a good idea to start with the most general route and add more specific routes lower
 *   in the list.
+*
+*   The following routes are an example of a single path setup where all the
+*   controllers are in one place.
 */
 
-/*
- *  The following routes are an example of a single path setup where all the
- *  controllers are in one place.
- */
 //    App::addRoute('', 'app/controllers/index_controller.php', 'Index_Controller_Class', 'indexAction');
-//    App::addRoute('[a-z]+', 'app/controllers/index_controller.php', 'Index_Controller_Class', '#1Action');
-//    App::addRoute('[a-z]+', 'app/controllers/#1_controller.php', '#1\U_Controller_Class', 'indexAction');
-//    App::addRoute('[a-z]+/[a-z]+', 'app/controllers/#1_controller.php', '#1\U_Controller_Class', '#2Action');
+//    App::addRoute('.+', 'app/controllers/index_controller.php', 'Index_Controller_Class', '#1Action');
+//    App::addRoute('.+', 'app/controllers/#1_controller.php', '#1\U_Controller_Class', 'indexAction');
+//    App::addRoute('.+/.+', 'app/controllers/#1_controller.php', '#1\U_Controller_Class', '#2Action');
     
 /*
  *  The following routes are an example of a modular setup where each module
@@ -53,7 +52,7 @@ ini_set('display_errors', 1);
 /*
 *   Add Modules to the application witht the addModule() function
 *   
-*   addModule("module_configuration_file_path/filename.php",
+*   App::addModule("module_configuration_file_path/filename.php",
 *            "name_of_configuration_class",
 *            "name_of_method");
 *   

@@ -2,12 +2,12 @@
 class Lightning_Model
 {
     protected $data = array();
-    protected $collection_type = "Lightning_Model";
+    protected $collection_type = "Lightning_Collection";
     protected $keys = array();
     protected $adapter;
     
     public function __construct() {
-        $this->adapter = new Lightning_Adapter;
+       // $this->adapter = new Lightning_Adapter;
     }
     
     public function getData()
@@ -20,7 +20,15 @@ class Lightning_Model
         if ($this->hasKey($key)) {
             return $this->data[$key];
         } else {
-            return null;
+            // If the key id of the form foo.bar then check if bar will work.
+            // this might be a bad idea.
+            $parts = explode('.', $key);
+            $key = array_pop($parts);
+            if ($this->hasKey($key)) {
+                return $this->data[$key];
+            } else {
+                return null;
+            }
         }
     }
     
@@ -33,6 +41,14 @@ class Lightning_Model
     {
         if (is_array($data)) {
             $this->data = $data;
+        }
+        return $this;
+    }
+    
+    public function appendData($data)
+    {
+        if (is_array($data)) {
+            $this->data = array_merge($this->data, $data);
         }
         return $this;
     }
@@ -61,7 +77,7 @@ class Lightning_Model
     
     public function getCollection()
     {
-        $collection = new $this->collection_type();
+        $collection = new $this->collection_type;
         $collection->setItemType(get_class($this));
         
         return $collection;

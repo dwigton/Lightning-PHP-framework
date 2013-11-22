@@ -84,6 +84,14 @@ class Lightning_Router
         }
         return;
     }
+    
+    public function setRoute($controller_route, $controller_class_name, $function_name, $parameters = array())
+    {
+        $this->controllerFile   = $controller_route;
+        $this->controller       = $controller_class_name;
+        $this->method           = $function_name;
+        $this->parameters       = $parameters;
+    }
         
     public function controllerFile()
     {

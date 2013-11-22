@@ -1,5 +1,5 @@
 <?php
-abstract class Lightning_Stored_Adapter
+class Lightning_Stored_Adapter extends Lightning_Adapter
 {
     protected $connection;
     
@@ -8,15 +8,35 @@ abstract class Lightning_Stored_Adapter
         $this->connection = $connection;
     }
     
-    abstract public function loadCollection(Lightning_Stored_Collection $collection);
-    
-    abstract public function loadModel(Lightning_Stored_Model $model);
-    
-    //abstract protected function 
-    
-    public function collectionJoin($left_collection, $right_collection, $left_key, $right_key, $type)
+    public function flatten()
     {
-        // Verify that the two collections use the same data source.
-        if($right_collection instanceof Lightning_Stored_Collection && $right_collection->getSource() == $left_collection->getSource())
+        return parent::flatten();
+    }
+    
+    protected function getConnection()
+    {
+        return $this->connection;
+    }
+    
+    public function getNewModel( $table )
+    {
+        return $this->getNewCollection($table)->getNewItem();
+    }
+    
+    public function getNewCollection( $table )
+    {
+        require_once App::getCollectionClassFile($this->connection->getSource(),$table);
+        $file = App::getCollectionClass($this->connection->getSource(),$table);
+        $collection = new $file();
+        $this->setCollection($collection);
+        $collection->setAdapter($this);
+        $collection->setTable($table);
+        
+        $model_class = App::getModelClass($this->connection->getSource(),$table);
+        if($model_class){
+            require_once App::getModelClassFile($this->connection->getSource(),$table);
+            $collection->setItemType($model_class);
+        }
+        return $collection;
     }
 }

@@ -1,27 +1,26 @@
 <?php
-abstract class Lightning_Stored_Collection extends Lightning_Collection
+class Lightning_Stored_Collection extends Lightning_Collection
 {
     protected $source = 'default';
-    protected $adapter;
     protected $table;
     
     public function __construct()
     {
-        $this->_item_type = $this->getDefaultItemType();
+        parent::__construct();
+        $this->item_type = $this->getDefaultItemType();
+        $this->flattened = false;
     }
     
-    abstract protected function getDefaultItemType();
+    protected function getDefaultItemType()
+    {
+        return 'Lightning_Stored_Model';
+    }
 
-    abstract public function load();
-    
-    abstract public function save();
-    
-    abstract public function delete();
-    
     public function getAdapter()
     {
         if (is_null($this->adapter)) {
             $this->adapter = App::getDataSource($this->source)->newAdapter();
+            $this->adapter->setCollection($this);
         }
         
         return $this->adapter;
@@ -29,7 +28,7 @@ abstract class Lightning_Stored_Collection extends Lightning_Collection
     
     public function getNewItem()
     {
-        $item = parent::getNewItem;
+        $item = parent::getNewItem();
         $item->setSource($this->getSource());
         $item->setTable($this->getTable());
         return $item;
@@ -37,7 +36,8 @@ abstract class Lightning_Stored_Collection extends Lightning_Collection
     
     public function setSource($source)
     {
-        $this->source = $source;
+        $this->source  = $source;
+        $this->adapter = null;
     }
     
     public function getSource()
@@ -48,13 +48,18 @@ abstract class Lightning_Stored_Collection extends Lightning_Collection
     public function setTable($table)
     {
         $this->table = $table;
+        if( $this->collection_name == 'default' ){
+            $this->collection_name = $table;
+        }
     }
     
     public function getTable()
     {
-        if (is_null($this->table)){
-            throw new Exception($message, $code, $previous)
-        }
         return $this->table;
+    }
+    
+    protected function beforeFlatten()
+    {
+        Lightning_Event::raiseEvent('Before_Stored_Collection_Flatten', $this);
     }
 }

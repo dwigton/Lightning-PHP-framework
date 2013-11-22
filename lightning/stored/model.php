@@ -1,21 +1,38 @@
 <?php
-abstract class Lightning_Stored_Model extends Lightning_Model
+class Lightning_Stored_Model extends Lightning_Model
 {
     protected $source = 'default';
     protected $adapter;
     protected $table;
     
     public function __construct() {
-        $this->_item_type = $this->getDefaultCollectionType();
+        $this->collection_type = $this->getDefaultCollectionType();
     }
     
-    abstract protected function getDefaultCollectionType();
+    protected function getDefaultCollectionType()
+    {
+        return 'Lightning_Stored_Collection';
+    }
 
-    abstract public function load(array $keys);
+    public function load($key, $value)
+    {
+        $item = $this->getCollection()
+                ->addFilter($key, 'eq', $value)
+                ->getItem(0);
+        $this->setData($item->getData());
+        
+        return $this;
+    }
     
-    abstract public function save();
+    public function save()
+    {
+        $this->getAdapter()->saveModel($this);
+    }
     
-    abstract public function delete();
+    public function delete()
+    {
+        $this->getAdapter()->deleteModel($this);
+    }
     
     public function setSource($source)
     {
