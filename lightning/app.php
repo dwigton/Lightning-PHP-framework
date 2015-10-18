@@ -8,9 +8,9 @@ class App
 {
     private static $output_buffer;
     private static $router;
-    private static $models = array();
-    private static $collections = array();
     private static $data_sources = array();
+    private static $theme_templates = array();
+    private static $environment = 'development'; 
     
     public static function getBuffer()
     {
@@ -53,153 +53,60 @@ class App
         }
     }
     
-    public static function addModel($source, $handle, $file_path, $model_class)
+    public static function addModel($adapter_name, $source, $file_path, $model_class)
     {
-        if( ! array_key_exists($source, self::$models)){
-            self::$models[$source] = array( $handle => array(
-                'file'  => $file_path,
-                'class' => $model_class
-            ));
-        }else{
-            self::$models[$source][$handle] = array(
-                'file'  => $file_path,
-                'class' => $model_class
-            );
+        self::$data_sources[$adapter_name]->addModel($source, $file_path, $model_class);
+    }
+    
+    public static function addCollection($adapter_name, $source, $file_path, $collection_class)
+    {
+        self::$data_sources[$adapter_name]->addCollection($source, $file_path, $collection_class);
+    }
+    
+    public static function model($adapter_name, $source)
+    {
+        return self::$data_sources[$adapter_name]->getNewModel($source);
+    }
+    
+    public static function collection($adapter_name, $source)
+    {
+        return self::$data_sources[$adapter_name]->getNewCollection($source);
+    }
+    
+    public static function addDataAdapter($source, Lightning_Adapter $adapter)
+    {
+        self::$data_sources[$source] = $adapter;
+    }
+    
+    public static function addEnvironment($name, $url)
+    {
+        if ($url === BASE_URL) {
+            self::$environment = $name;
         }
     }
     
-    public static function addCollection($source, $handle, $file_path, $model_class)
+    public static function isEnvironment($name)
     {
-        if( ! array_key_exists($source, self::$collections)){
-            self::$collections[$source] = array( $handle => array(
-                'file'  => $file_path,
-                'class' => $model_class
-            ));
-        }else{
-            self::$collections[$source][$handle] = array(
-                'file'  => $file_path,
-                'class' => $model_class
-            );
-        }
+        return $name === self::$environment;
     }
     
-    public function getModelClass($source, $handle)
+    public static function getDataAdapter($name)
     {
-        if (array_key_exists($source, self::$models) && array_key_exists($handle, self::$models[$source])) {
-            return self::$models[$source][$handle]['class'];
-        }else{
-            if(array_key_exists($source, self::$data_sources)){
-                return 'Lightning_Stored_Model';
-            } else {
-                return 'Lightning_Model';
-            }
-        }
+        return self::$data_sources[$name];
     }
-    
-    public function getModelClassFile($source, $handle)
+
+    public static function replaceTemplate($old_template, $new_template)
     {
-        if (array_key_exists($source, self::$models) && array_key_exists($handle, self::$models[$source])) {
-            return self::$models[$source][$handle]['file'];
-        }else{
-            if(array_key_exists($source, self::$data_sources)){
-                return 'lightning/stored/model.php';
-            } else {
-                return 'lightning/model.php';
-            }
-        }
+        self::$theme_templates[$old_template] = $new_template;
     }
-    
-    public function getCollectionClass($source, $handle)
+
+    public static function getTemplate($file_path)
     {
-        if (array_key_exists($source, self::$collections) && array_key_exists($handle, self::$collections[$source])) {
-            return self::$collections[$source][$handle]['class'];
-        }else{
-            if(array_key_exists($source, self::$data_sources)){
-                return 'Lightning_Stored_Collection';
-            } else {
-                return 'Lightning_Collection';
-            }
-        }
-    }
-    
-    public function getCollectionClassFile($source, $handle)
-    {
-        if (array_key_exists($source, self::$collections) && array_key_exists($handle, self::$collections[$source])) {
-            return self::$collections[$source][$handle]['file'];
-        }else{
-            if(array_key_exists($source, self::$data_sources)){
-                return 'lightning/stored/model.php';
-            } else {
-                return 'lightning/model.php';
-            }
-        }
-    }
-    
-    public static function model($source, $handle)
-    {
-        $model = null;
-        
-        if (array_key_exists($source, self::$models) && array_key_exists($handle, self::$models[$source])) {
-            
-            require_once self::$models[$source][$handle]['file'];
-        
-            if (func_num_args() > 2) {
-                $reflector = new ReflectionClass(self::$models[$source][$handle]['class']);
-                $model = $reflector->newInstanceArgs(array_slice(func_get_args(), 2));
-            } else {
-                $model = new self::$models[$source][$handle]['class']();
-            }
+        if (isset(self::$theme_templates[$file_path])) {
+            return self::$theme_templates[$file_path];
         } else {
-            if (array_key_exists($source, self::$data_sources)) {
-                $model = self::getDataSource($source)->newAdapter()->getNewModel($handle);
-            } else {
-                $model = new Lightning_Model;
-            }
+            return $file_path;
         }
-        
-//        require_once self::getCollectionClassFile($source, $handle);
-//        $model->setCollectionType(self::getCollectionClass($source, $handle));
-        
-        return $model;
-    }
-    
-    public static function collection($source, $handle)
-    {
-        $collection = null;
-        
-        if (array_key_exists($source, self::$collections) && array_key_exists($handle, self::$collections[$source])) {
-            
-            require_once self::$collections[$source][$handle]['file'];
-        
-            if (func_num_args() > 2) {
-                $reflector = new ReflectionClass(self::$collections[$source][$handle]['class']);
-                $collection = $reflector->newInstanceArgs(array_slice(func_get_args(), 2));
-            } else {
-                $collection = new self::$collections[$source][$handle]['class']();
-            }
-        } else {
-            if (array_key_exists($source, self::$data_sources)) {
-                $collection = self::getDataSource($source)->newAdapter()->getNewCollection($handle);
-            } else {
-                $collection = new Lightning_Collection;
-            }
-        }
-        
-//        require_once self::getModelClassFile($source, $handle);
-//        $collection->setItemType(self::getModelClass($source, $handle));
-        
-        return $collection;
-    }
-    
-    public static function addDataSource($source, Lightning_Stored_Connection $connection)
-    {
-        $connection->setSource($source);
-        self::$data_sources[$source] = $connection;
-    }
-    
-    public static function getDataSource($source)
-    {
-        return self::$data_sources[$source];
     }
     
     public static function log($message, $log_file = 'application.log')
@@ -213,7 +120,6 @@ class App
             ob_start();
             var_dump($message);
             $message = ob_get_clean();
-            //$message = var_export($message, true);
         }
         
         fwrite($fp, "$message\n");

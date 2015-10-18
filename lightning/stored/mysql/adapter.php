@@ -6,74 +6,59 @@ class Lightning_Stored_Mysql_Adapter extends Lightning_Stored_Adapter
     protected $where;
     protected $order;
     protected $limit;
+    protected $symbols = array();
+    protected $current_symbol;
 
-    public function flatten()
+    public function flattenCollection(Lightning_Stored_Collection $collection)
     {        
         parent::flatten();
         
         return $this;
     }
     
-    public function collectionJoin($left_collection, $right_collection, $left_key, $right_key, $type)
+    public function collectionJoin(Lightning_Collection $left_collection, Lightning_Collection $right_collection, $left_key, $right_key, $type)
     {
-        
+        if ($right_collection->getAdapter() === $this) {
+            $from .= strtoupper($type)." JOIN ".$right_collection->getSource()
+            .this->symbol($right_collection>getSource()) 
+            .' ON '.$this->symbol().'.'.$right_key.' = '.$left_key;
+        } else {
+
+        }
     }
     
-    public function saveModel( $model )
+    public function saveModel(Lightning_Stored_Model $model )
     {
-        $file = $this->connection->getDatabase()."/".$model->getTable().".xml";
-        $xml = simplexml_load_file($file);
-        $id = (string)$xml->id;
-        
-        if($model->getValue($id) == null){
-            $model->setValue($id, (int)$xml->increment);
-            $xml->increment = (int)$xml->increment + 1;
-        }
-        
-        $data = new SimpleXMLElement('<row></row>');
-        
-        foreach($xml->columns->column as $column){
-            $data->addChild((string)$column, $model->getValue((string)$column));
-        }
-        
-        $duplicate = null;
-        
-        foreach($xml->rows->row as $row){
-            if((int)$row->$id == $model->getValue($id)){
-                $duplicate = $row;
-            }
-        }
-        
-        unset($duplicate[0][0]);
-        
-        $this->sxml_append($xml->rows, $data);
-        
-        $xml->asXml($file);
-        
-        $this->formatXml($file);
+        //$query = "INSERT INTO ".$model->getSource()." "
     }
     
     public function deleteModel( $model )
     {
-        $file = $this->connection->getDatabase()."/".$model->getTable().".xml";
-        $xml = simplexml_load_file($file);
-        $id = (string)$xml->id;
         
-        if($model->getValue($id) != null){        
-            $target = null;
-
-            foreach($xml->rows->row as $row){
-                if((int)$row->$id == $model->getValue($id)){
-                    $target = $row;
-                }
-            }
-
-            unset($target[0][0]);
-
-            $xml->asXml($file);
-
-            $this->formatXml($file);
-        }
-        $model->setData(array());
     }
+
+    private function symbol($table = "", $new = false)
+    {
+        $result = '';
+        if ($table !== "") {
+            $parts = explode($table, '_');
+            foreach ($parts as $part) {
+                $result .= strtolower($part[0]);
+            }
+            if (array_key_exists($result, $this->$symbols)) {
+                if ($new) {
+                    $result = ++$result.$this->symbols[$result]['count'];
+                } else {
+                    $result = $this->symbols[$result]['stack'][$this->symbols[$result]['index']]; 
+                }
+            } else {
+                $this->symbols[$result]['count'] = 0;
+            }
+            $this->current_symbol = $result;
+        } else {
+            $result = $this->current_symbol;
+        }
+        return $result;
+    }
+
 }

@@ -1,11 +1,18 @@
 <?php
+
+/*  
+ *  Add Environments
+ */
+    App::addEnvironment('development', 'http://dev.example.com');
+    App::addEnvironment('production', 'http://www.example.com');
+    
 /*
  *  Turn on error reporting for development.
  */
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
+    if (App::isEnvironment('development')) {
+        error_reporting(E_ALL);
+        ini_set('display_errors', 1);
+    }
 /*
 *   Add Routes to controllers with the addRoute() function
 *   
@@ -50,7 +57,7 @@ ini_set('display_errors', 1);
     App::addRoute('.+/.+/.+', 'modules/#1/controllers/#2_controller.php', '#1\U_#2\U_Controller_Class', '#3Action');
 
 /*
-*   Add Modules to the application witht the addModule() function
+*   Add Modules to the application with the addModule() function
 *   
 *   App::addModule("module_configuration_file_path/filename.php",
 *            "name_of_configuration_class",
@@ -77,9 +84,6 @@ ini_set('display_errors', 1);
     App::addModule('modules/output_formatter/config.php', 'Output_Formatter_Module_Config', 'config');
 
 /* Add your modules here */
-    App::addModule('modules/stonecottage_theme/config.php', 'StoneCottage_Theme_Config', 'config');
-    App::addModule('modules/articles/config.php', 'Articles_Config', 'config');
-    
     
 /*
  *  Add Data Sources with the addDataSource() function
@@ -99,10 +103,3 @@ ini_set('display_errors', 1);
  *  layer by changing the following statement to use a different adapter.
  */
     
-//    App::addDataSource('default', new Lightning_Stored_Connection(
-//                'localhost',
-//                'user',
-//                'password',
-//                'test_database',
-//                'Lightning_Mysql_Adapter'
-//            ));

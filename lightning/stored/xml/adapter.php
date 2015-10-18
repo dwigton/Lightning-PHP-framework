@@ -1,24 +1,24 @@
 <?php
 class Lightning_Stored_Xml_Adapter extends Lightning_Stored_Adapter
 {    
-    public function flatten()
+    public function flattenCollection($collection)
     {
-        $xml = simplexml_load_file($this->connection->getDatabase()."/".$this->collection->getTable().".xml");
+        $xml = simplexml_load_file($this->database."/".$collection->getSource().".xml");
         
         foreach($xml->rows->row as $row){
             $data = array();
             foreach($row as $column=>$value){
                 $data[(string)$column] = (string)$value;
             }
-            $this->collection->addNewItem($data);
+            $collection->addNewItem($data);
         }
         
-        return parent::flatten();
+        return parent::flatten($collection);
     }
     
-    public function saveModel( $model )
+    public function saveModel(Lightning_Stored_Model $model )
     {
-        $file = $this->connection->getDatabase()."/".$model->getTable().".xml";
+        $file = $this->connection->getDatabase()."/".$model->getSource().".xml";
         $xml = simplexml_load_file($file);
         $id = (string)$xml->id;
         
@@ -50,9 +50,9 @@ class Lightning_Stored_Xml_Adapter extends Lightning_Stored_Adapter
         $this->formatXml($file);
     }
     
-    public function deleteModel( $model )
+    public function deleteModel(Lightning_Stored_Model $model )
     {
-        $file = $this->connection->getDatabase()."/".$model->getTable().".xml";
+        $file = $this->database."/".$model->getSource().".xml";
         $xml = simplexml_load_file($file);
         $id = (string)$xml->id;
         

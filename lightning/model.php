@@ -5,9 +5,25 @@ class Lightning_Model
     protected $collection_type = "Lightning_Collection";
     protected $keys = array();
     protected $adapter;
+    protected $source;
     
-    public function __construct() {
-       // $this->adapter = new Lightning_Adapter;
+    public function __construct(Lightning_Adapter $adapter = null )
+    {
+       if ( $adapter === null ) {
+            $this->adapter = new Lightning_Adapter();
+        } else {
+            $this->adapter = $adapter;
+        }
+    }
+    
+    public function setSource($source)
+    {
+        $this->source = $source;
+    }
+    
+    public function getSource()
+    {
+        return $this->source;
     }
     
     public function getData()
@@ -64,23 +80,9 @@ class Lightning_Model
         return !empty($this->data);
     }
     
-    public function setCollectionType($type)
-    {
-        $this->collection_type = $type;
-        return $this;
-    }
-    
-    public function getCollectionType()
-    {
-        return $this->collection_type;
-    }
-    
     public function getCollection()
     {
-        $collection = new $this->collection_type;
-        $collection->setItemType(get_class($this));
-        
-        return $collection;
+        return $this->adapter->getNewCollection($this->source);
     }
     
     public function setAdapter($adapter)

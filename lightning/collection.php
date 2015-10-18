@@ -2,12 +2,12 @@
 
 class Lightning_Collection implements Iterator
 {
-    protected $item_type           = "Lightning_Model";
     protected $collection_name     = 'default';
     protected $flattened           = true;
-    public $keys_set               = false;
+    public    $keys_set            = false;
     
     protected $adapter;
+    protected $source;
     protected $items               = array();
     protected $filters             = array();
     protected $filter_operations   = array();
@@ -18,10 +18,13 @@ class Lightning_Collection implements Iterator
     protected $limit               = array('amount' => 0, 'start' => 0);
     
     
-    public function __construct()
+    public function __construct(Lightning_Adapter $adapter = null)
     {
-        $this->adapter = new Lightning_Adapter();
-        $this->getAdapter()->setCollection($this);
+        if ( $adapter === null ) {
+            $this->adapter = new Lightning_Adapter();
+        } else {
+            $this->adapter = $adapter;
+        }
     }
     
     public function setAdapter(Lightning_Adapter $adapter)
@@ -30,30 +33,38 @@ class Lightning_Collection implements Iterator
         $this->adapter = $adapter;
     }
     
+    /**
+    * Return collection Adapter
+    *
+    * @return Lightning_Adapter
+    */
     public function getAdapter()
     {
         return $this->adapter;
     }
     
+    public function setSource($source)
+    {
+        $this->source = $source;
+        if( $this->collection_name == 'default' ){
+            $this->collection_name = $source;
+        }
+    }
+    
+    public function getSource()
+    {
+        return $this->source;
+    }
+    
     public function setCollectionName($name)
     {
         $this->collection_name = $name;
+        return $this;
     }
     
     public function getCollectionName()
     {
         return $this->collection_name;
-    }
-        
-    public function setItemType($type)
-    {
-        $this->item_type = $type;
-        return $this;
-    }
-    
-    public function getItemType()
-    {
-        return $this->item_type;
     }
     
     public function addItem(Lightning_Model $item)
@@ -77,9 +88,7 @@ class Lightning_Collection implements Iterator
     
     public function getNewItem()
     {
-        $item = new $this->item_type();
-        $item->setCollectionType(get_class($this));
-        return $item;
+        return $this->adapter->getNewModel($this->source);
     }
     
     public function count()
@@ -97,7 +106,7 @@ class Lightning_Collection implements Iterator
     public function setItemKeys($key_array)
     {
         $this->keys = $key_array;
-        $this->keys_set = false;
+        $this->keys_set = true;
         return $this;
     }
     
@@ -187,7 +196,7 @@ class Lightning_Collection implements Iterator
         if (!$this->flattened) {
             $this->beforeFlatten();
             $this->flattened = true;
-            $this->getAdapter()->flatten();
+            $this->getAdapter()->flatten($this);
         }
         
         return $this;
@@ -195,7 +204,7 @@ class Lightning_Collection implements Iterator
     
     protected function beforeFlatten()
     {
-        
+        Lightning_Event::raiseEvent('Before_Collection_Flatten', $this);
     }
 
     public function addCollection($collection)
@@ -268,16 +277,19 @@ class Lightning_Collection implements Iterator
   
     public function current()
     {
+        $this->flatten();
         return current($this->items);
     }
   
     public function key()
     {
+        $this->flatten();
         return key($this->items);
     }
   
     public function next()
     {
+        $this->flatten();
         return next($this->items);
     }
   

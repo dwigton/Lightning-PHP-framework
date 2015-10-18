@@ -2,14 +2,16 @@
 class Lightning_View
 {
     private $child_views = array();
-    private $css_files = array();
-    private $script_files = array();
+    private $items = array();
     protected $var = array();
     protected $template_file_path;
+    protected $item_templates = array();
     
     public function __construct($template_file_path)
     {
         $this->template_file_path = $template_file_path;
+        $this->setItemTemplate('css','lightning/templates/items/csstag.php');
+        $this->setItemTemplate('script','lightning/templates/items/scripttag.php');
     }
     
     public static function newExtendedView($view_file_path, $view_class_name, $template_file_path = null)
@@ -66,7 +68,7 @@ class Lightning_View
             $this->var = array_merge($this->var, $variable_array);
         }
         extract($this->var);
-        require_once $this->template_file_path;
+        require App::getTemplate($this->template_file_path);
         return $this;
     }
     
@@ -75,58 +77,43 @@ class Lightning_View
         $this->child_views[$handle]->render($this->var);
         return $this;
     }
-    
-    public function addCss($css_file)
+
+    public function setItemTemplate($type, $template_file_path)
     {
-        $this->css_files[$css_file] = $css_file;
+        $this->item_templates[$type] = $template_file_path;
+        return $this;
+    }
+
+    public function getItemTemplate($type)
+    {
+        return App::getTemplate($this->item_templates[$type]);
+    }
+    
+    public function addItem($type, $info)
+    {
+        if (!array_key_exists($type, $this->items))
+            $this->items[$type] = array();
+        $this->items[$type][$info] = $info;
         return $this;
     }
     
-    public function addScript($script_file_name)
+    protected function renderItems($type)
     {
-        $this->script_files[$script_file_name] = $script_file_name;
+        foreach ($this->itemArray($type) as $item)
+            include $this->getItemTemplate($type);
         return $this;
     }
     
-    protected function getCss()
+    public function itemArray($type)
     {
-        $output = "";
-        $cssArray = $this->cssArray();
-        
-        foreach ($cssArray as $css_file) {
-            $output .= "<link rel='stylesheet' type='text/css' href='$css_file' />\n";
+        if (isset($this->items[$type])) {
+            $itemArray = $this->items[$type];
+        } else {
+            $itemArray = array();
         }
-        
-        return $output;
-    }
-    
-    protected function getScript()
-    {
-        $output = "";
-        $scriptArray = $this->scriptArray();
-        
-        foreach ($scriptArray as $script_file) {
-            $output .= "<script type='text/javaScript' src='$script_file' ></script>\n";
-        }
-        
-        return $output;
-    }
-    
-    public function cssArray()
-    {
-        $cssArray = $this->css_files;
         foreach ($this->child_views as $child_view) {
-            $cssArray = array_merge($cssArray, $child_view->cssArray());
+            $itemArray = array_merge($itemArray, $child_view->itemArray($type));
         }
-        return $cssArray;
-    }
-    
-    public function scriptArray()
-    {
-        $scriptArray = $this->script_files;
-        foreach ($this->child_views as $child_view) {
-            $scriptArray = array_merge($scriptArray, $child_view->scriptArray());
-        }
-        return $scriptArray;
+        return $itemArray;
     }
 }
