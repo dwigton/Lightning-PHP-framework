@@ -1,16 +1,17 @@
-<?php
-class Lightning_Model
+<?php namespace Lightning;
+
+class Model
 {
     protected $data = array();
-    protected $collection_type = "Lightning_Collection";
+    protected $collection_type = "Collection";
     protected $keys = array();
     protected $adapter;
     protected $source;
     
-    public function __construct(Lightning_Adapter $adapter = null )
+    public function __construct(Adapter $adapter = null )
     {
        if ( $adapter === null ) {
-            $this->adapter = new Lightning_Adapter();
+            $this->adapter = new Adapter();
         } else {
             $this->adapter = $adapter;
         }

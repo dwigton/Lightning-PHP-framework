@@ -1,8 +1,8 @@
-<?php
+<?php namespace Lightning;
 
-class Lightning_Event
+
+class Event
 {
-    
     private static $observers = array();
     
     public static function addObserver($event_name, $file_name, $class, $function, $stop_processing = false)

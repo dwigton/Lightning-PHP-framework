@@ -1,5 +1,6 @@
-<?php
-class Lightning_View
+<?php namespace Lightning;
+
+class View
 {
     private $child_views = array();
     private $items = array();
@@ -28,7 +29,7 @@ class Lightning_View
     
     public function addNewChild($handle, $template_file_path)
     {
-        $this->child_views[$handle] = new Lightning_View($template_file_path);
+        $this->child_views[$handle] = new View($template_file_path);
         return $this;
     }
     
@@ -63,7 +64,7 @@ class Lightning_View
     
     public function render($variable_array = false)
     {
-        Lightning_Event::raiseEvent('lightning_view_render', array('view'=>$this));
+        Event::raiseEvent('lightning_view_render', array('view'=>$this));
         if (is_array($variable_array)) {
             $this->var = array_merge($this->var, $variable_array);
         }

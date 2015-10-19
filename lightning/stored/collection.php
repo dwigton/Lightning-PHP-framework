@@ -1,5 +1,6 @@
-<?php
-class Lightning_Stored_Collection extends Lightning_Collection
+<?php namespace Lightning;
+
+class Stored_Collection extends Collection
 {    
     public function __construct($adapter = null)
     {
@@ -9,6 +10,6 @@ class Lightning_Stored_Collection extends Lightning_Collection
     
     protected function beforeFlatten()
     {
-        Lightning_Event::raiseEvent('Before_Stored_Collection_Flatten', $this);
+        Event::raiseEvent('Before_Stored_Collection_Flatten', $this);
     }
 }

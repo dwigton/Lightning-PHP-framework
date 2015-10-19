@@ -1,5 +1,6 @@
-<?php
-class Lightning_Stored_Mysql_Adapter extends Lightning_Stored_Adapter
+<?php namespace Lightning;
+
+class Stored_Mysql_Adapter extends Stored_Adapter
 {    
     protected $select;
     protected $from;
@@ -9,25 +10,25 @@ class Lightning_Stored_Mysql_Adapter extends Lightning_Stored_Adapter
     protected $symbols = array();
     protected $current_symbol;
 
-    public function flattenCollection(Lightning_Stored_Collection $collection)
+    public function flattenCollection(Stored_Collection $collection)
     {        
         parent::flatten();
         
         return $this;
     }
     
-    public function collectionJoin(Lightning_Collection $left_collection, Lightning_Collection $right_collection, $left_key, $right_key, $type)
+    public function collectionJoin(Collection $left_collection, Collection $right_collection, $left_key, $right_key, $type)
     {
         if ($right_collection->getAdapter() === $this) {
             $from .= strtoupper($type)." JOIN ".$right_collection->getSource()
-            .this->symbol($right_collection>getSource()) 
+            .$this->symbol($right_collection>getSource()) 
             .' ON '.$this->symbol().'.'.$right_key.' = '.$left_key;
         } else {
 
         }
     }
     
-    public function saveModel(Lightning_Stored_Model $model )
+    public function saveModel(Stored_Model $model )
     {
         //$query = "INSERT INTO ".$model->getSource()." "
     }

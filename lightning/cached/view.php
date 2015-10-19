@@ -1,5 +1,5 @@
-<?php
-class Lightning_Cached_View extends Lightning_View
+<?php namespace Lightning;
+class Cached_View extends View
 {
     public function render($variable_array = false)
     {

@@ -1,6 +1,7 @@
-<?php
+<?php namespace Lightning;
 
-class Lightning_Collection implements Iterator
+
+class Collection implements Iterator
 {
     protected $collection_name     = 'default';
     protected $flattened           = true;
@@ -18,16 +19,16 @@ class Lightning_Collection implements Iterator
     protected $limit               = array('amount' => 0, 'start' => 0);
     
     
-    public function __construct(Lightning_Adapter $adapter = null)
+    public function __construct(Adapter $adapter = null)
     {
         if ( $adapter === null ) {
-            $this->adapter = new Lightning_Adapter();
+            $this->adapter = new Adapter();
         } else {
             $this->adapter = $adapter;
         }
     }
     
-    public function setAdapter(Lightning_Adapter $adapter)
+    public function setAdapter(Adapter $adapter)
     {
         $adapter->setCollection($this);
         $this->adapter = $adapter;
@@ -36,7 +37,7 @@ class Lightning_Collection implements Iterator
     /**
     * Return collection Adapter
     *
-    * @return Lightning_Adapter
+    * @return Adapter
     */
     public function getAdapter()
     {
@@ -67,7 +68,7 @@ class Lightning_Collection implements Iterator
         return $this->collection_name;
     }
     
-    public function addItem(Lightning_Model $item)
+    public function addItem(Model $item)
     {
         if (!$this->keys_set) {
             foreach ($item->getData() as $key => $data) {
@@ -204,7 +205,7 @@ class Lightning_Collection implements Iterator
     
     protected function beforeFlatten()
     {
-        Lightning_Event::raiseEvent('Before_Collection_Flatten', $this);
+        Event::raiseEvent('Before_Collection_Flatten', $this);
     }
 
     public function addCollection($collection)
@@ -218,7 +219,7 @@ class Lightning_Collection implements Iterator
         return $this->collections;
     }
     
-    public function join($parent_key, $child_key, $type = Lightning_Adapter::JOIN_INNER)
+    public function join($parent_key, $child_key, $type = Adapter::JOIN_INNER)
     {
         end($this->collections);
         $this->collection_joins[] = array(

@@ -1,8 +1,9 @@
-<?php
-class Lightning_Router
+<?php namespace Lightning;
+
+class Router
 {
-    private $controllerFile = 'lightning/error_controller.php';
-    private $controller = 'Lightning_Error_Controller';
+    private $controllerFile = LIGHTNING_DIR.'/error_controller.php';
+    private $controller = 'Lightning\Error_Controller';
     private $method = 'notFound';
     private $parameters = array();
     private $uri;
@@ -43,16 +44,16 @@ class Lightning_Router
             // Matching is done in reverse to ensure that #10 is never over-written by #1
             // The pattern #1\U is changed to ucfirst and #1\L is changed to lowercase.
             
-            $controller_route = preg_replace("/\#$index\Q\U\E/", ucfirst($token), $controller_route);
-            $controller_route = preg_replace("/\#$index\Q\L\E/", strtolower($token), $controller_route);
+            $controller_route = preg_replace("/\#$index\Q^U\E/", ucfirst($token), $controller_route);
+            $controller_route = preg_replace("/\#$index\Q^L\E/", strtolower($token), $controller_route);
             $controller_route = preg_replace("/\#$index/", $token, $controller_route);
             
-            $controller_class_name = preg_replace("/\#$index\Q\U\E/", ucfirst($token), $controller_class_name);
-            $controller_class_name = preg_replace("/\#$index\Q\L\E/", strtolower($token), $controller_class_name);
+            $controller_class_name = preg_replace("/\#$index\Q^U\E/", ucfirst($token), $controller_class_name);
+            $controller_class_name = preg_replace("/\#$index\Q^L\E/", strtolower($token), $controller_class_name);
             $controller_class_name = preg_replace("/\#$index/", $token, $controller_class_name);
             
-            $function_name = preg_replace("/\#$index\Q\U\E/", ucfirst($token), $function_name);
-            $function_name = preg_replace("/\#$index\Q\L\E/", strtolower($token), $function_name);
+            $function_name = preg_replace("/\#$index\Q^U\E/", ucfirst($token), $function_name);
+            $function_name = preg_replace("/\#$index\Q^L\E/", strtolower($token), $function_name);
             $function_name = preg_replace("/\#$index/", $token, $function_name);
             
             $index--;
@@ -64,7 +65,7 @@ class Lightning_Router
             
             if (class_exists($controller_class_name)) {
                 
-                $ControllerReflectionClass = new ReflectionClass($controller_class_name);
+                $ControllerReflectionClass = new \ReflectionClass($controller_class_name);
 
                 if ($ControllerReflectionClass->hasMethod($function_name)) {
                     

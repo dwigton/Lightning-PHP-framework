@@ -1,5 +1,5 @@
-<?php
-abstract class Lightning_Stored_Adapter extends Lightning_Adapter
+<?php namespace Lightning;
+abstract class Stored_Adapter extends Adapter
 {
     protected $host;
     protected $username;
@@ -13,11 +13,11 @@ abstract class Lightning_Stored_Adapter extends Lightning_Adapter
         $this->password             = $password;
         $this->database             = $database;
         
-        $this->addModel('default', 'lightning/stored/model.php', 'Lightning_Stored_Model');
-        $this->addCollection('default', 'lightning/stored/collection.php', 'Lightning_Stored_Collection');
+        $this->addModel('default', 'lightning/stored/model.php', 'Lightning\Stored_Model');
+        $this->addCollection('default', 'lightning/stored/collection.php', 'Lightning\Stored_Collection');
     }
     
-    public abstract function saveModel(Lightning_Stored_Model $model);
+    public abstract function saveModel(Stored_Model $model);
     
-    public abstract function deleteModel(Lightning_Stored_Model $model);
+    public abstract function deleteModel(Stored_Model $model);
 }

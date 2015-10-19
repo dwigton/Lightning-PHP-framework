@@ -1,5 +1,6 @@
-<?php
-class Lightning_Stored_Model extends Lightning_Model
+<?php namespace Lightning;
+
+class Stored_Model extends Model
 {
     public function load($key, $value)
     {

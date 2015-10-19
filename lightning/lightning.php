@@ -1,10 +1,14 @@
 <?php
+
 // Include the App class.
-require_once 'lightning/app.php';
+require_once 'app.php';
 // Adding a function to find all the base lightnining files.
 spl_autoload_register('loadLightning');
 
-define('ROOT_PATH', substr($_SERVER['SCRIPT_FILENAME'], 0, -10));
+$stack = debug_backtrace();
+
+define('LIGHTNING_DIR',dirname(__FILE__));
+define('ROOT_PATH', substr($stack[count($stack) - 1]['file'], 0, -10));
 define('PROJECT_DIR', rtrim(strstr($_SERVER['PHP_SELF'], 'index.php', true), '/'));
 define('BASE_URL', 'http://'.$_SERVER['HTTP_HOST'].PROJECT_DIR);
 
@@ -14,9 +18,9 @@ define('URI', current(explode('?', substr($_SERVER['REQUEST_URI'],strlen(PROJECT
 App::initRouter(URI);
 
 // Load the project config.
-require_once 'config.php';
+require_once ROOT_PATH.'/config.php';
 
-Lightning_Event::raiseEvent('Before_Controller_Load');
+Lightning\Event::raiseEvent('Before_Controller_Load');
 
 require_once App::router()->controllerFile();
 $controller_class_name = App::router()->controller();
@@ -29,14 +33,17 @@ ob_end_flush();
 function afterRender($html)
 {
     App::setBuffer($html);
-    Lightning_Event::raiseEvent('Render_Complete', array('html' => $html));
+    Lightning\Event::raiseEvent('Render_Complete', array('html' => $html));
     return App::getBuffer();
 }
 
 function loadLightning($class_name)
 {
-    $path = ROOT_PATH."/".strtolower(str_replace('_', '/', $class_name)).".php";
-    if (file_exists($path)) {
-        include_once $path;
+    $namespaces = explode('\\',$class_name);
+    if (array_shift($namespaces) == 'Lightning') {
+        $path = LIGHTNING_DIR."/".strtolower(str_replace('_', '/', end($namespaces))).".php";
+        if (file_exists($path)) {
+            include_once $path;
+        }
     }
 }

@@ -27,7 +27,7 @@ class App
         return self::$router;
     }
     
-    public static function initRouter($uri, $router_class = 'Lightning_Router')
+    public static function initRouter($uri, $router_class = 'Lightning\Router')
     {
         self::$router = new $router_class($uri);
     }
@@ -73,7 +73,7 @@ class App
         return self::$data_sources[$adapter_name]->getNewCollection($source);
     }
     
-    public static function addDataAdapter($source, Lightning_Adapter $adapter)
+    public static function addDataAdapter($source, Adapter $adapter)
     {
         self::$data_sources[$source] = $adapter;
     }

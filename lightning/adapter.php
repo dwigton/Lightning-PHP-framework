@@ -1,5 +1,6 @@
-<?php
-class Lightning_Adapter
+<?php namespace Lightning;
+
+class Adapter
 {
     
     protected $models = array();
@@ -12,8 +13,8 @@ class Lightning_Adapter
     
     public function __construct() 
     {
-        $this->addModel('default', 'lightning/model.php', 'Lightning_Model');
-        $this->addCollection('default', 'lightning/collection.php', 'Lightning_Collection');
+        $this->addModel('default', 'lightning/model.php', 'Model');
+        $this->addCollection('default', 'lightning/collection.php', 'Collection');
     }
     
     public function addModel($source, $file_path, $model_class)
@@ -211,7 +212,7 @@ class Lightning_Adapter
         }
     }
     
-    public function flattenCollection(Lightning_Collection $collection)
+    public function flattenCollection(Collection $collection)
     {
         $stack = array($collection);
         $joins = $collection->getCollectionJoins();

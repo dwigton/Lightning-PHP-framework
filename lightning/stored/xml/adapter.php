@@ -1,5 +1,6 @@
-<?php
-class Lightning_Stored_Xml_Adapter extends Lightning_Stored_Adapter
+<?php namespace Lightning;
+
+class Stored_Xml_Adapter extends Stored_Adapter
 {    
     public function flattenCollection($collection)
     {
@@ -16,7 +17,7 @@ class Lightning_Stored_Xml_Adapter extends Lightning_Stored_Adapter
         return parent::flatten($collection);
     }
     
-    public function saveModel(Lightning_Stored_Model $model )
+    public function saveModel(Stored_Model $model )
     {
         $file = $this->connection->getDatabase()."/".$model->getSource().".xml";
         $xml = simplexml_load_file($file);
@@ -50,7 +51,7 @@ class Lightning_Stored_Xml_Adapter extends Lightning_Stored_Adapter
         $this->formatXml($file);
     }
     
-    public function deleteModel(Lightning_Stored_Model $model )
+    public function deleteModel(Stored_Model $model )
     {
         $file = $this->database."/".$model->getSource().".xml";
         $xml = simplexml_load_file($file);
