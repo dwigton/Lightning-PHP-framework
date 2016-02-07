@@ -2,7 +2,7 @@
 
 class Router
 {
-    private $controllerFile = LIGHTNING_DIR.'/error_controller.php';
+    private $controllerFile = '';
     private $controller = 'Lightning\Error_Controller';
     private $method = 'notFound';
     private $parameters = array();
@@ -10,6 +10,7 @@ class Router
     
     public function __construct($uri)
     {
+        $controllerFile = \App::modDir('lightning').'/error_controller.php';
         $this->uri = $paths = explode("/", trim($uri, " /"));
     }
     

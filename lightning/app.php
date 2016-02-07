@@ -8,6 +8,7 @@ class App
 {
     private static $output_buffer;
     private static $router;
+    private static $modules = array();
     private static $data_sources = array();
     private static $theme_templates = array();
     private static $environment = 'development'; 
@@ -37,20 +38,25 @@ class App
         self::$router->addRoute($pattern, $controller_route, $controller_class_name, $function_name);
     }
     
-    public static function addModule($config_file_path, $module_class_name, $init_method)
+    public static function addModule($module_name, $directory, $config_file='config.php', $namespace='')
     {
-        if (file_exists($config_file_path)) {
-            include_once $config_file_path;
-            if (class_exists($module_class_name)) {
-
-                $ModuleReflectionClass = new ReflectionClass($module_class_name);
-
-                if ($ModuleReflectionClass->hasMethod($init_method)) {
-                    $module = new $module_class_name();
-                    call_user_func(array($module,$init_method));
-                }
-            }
+        if (is_file("$directory/$config_file")) {
+            require_once "$directory/$config_file";
         }
+        self::$modules[$module_name] = array(
+                'directory' => realpath($directory),
+                'namespace' => $namespace,
+                );
+    }
+
+    public static function getModules()
+    {
+        return self::$modules;
+    }
+
+    public static function modDir($module_name)
+    {
+        return self::$modules[$module_name]['directory'];
     }
     
     public static function addModel($adapter_name, $source, $file_path, $model_class)

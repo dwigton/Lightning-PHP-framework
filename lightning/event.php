@@ -19,8 +19,10 @@ class Event
     public static function raiseEvent($event_name, $data = array())
     {
         foreach (self::$observers as $observer) {
-            if ($event_name == $observer['name'] && file_exists($observer['file'])) {
-                include_once $observer['file'];
+            if ($event_name == $observer['name']) {
+                if (is_file($observer['file'])) {
+                    include_once $observer['file'];
+                }
                 if (class_exists($observer['class'])) {
                     $observer_class = new $observer['class']();
                     $observer_class->$observer['function']($data);
