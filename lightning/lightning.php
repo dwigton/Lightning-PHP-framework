@@ -51,7 +51,7 @@ function loadLightning($class_name)
     }
 
     foreach (App::getModules() as $module) {
-        echo "<p>".$module['directory']."/$file_path"."</p>";
+        //echo "<p>".$module['directory']."/$file_path"."</p>";
         if ($module['namespace'] == $namespace && is_file($module['directory']."/$file_path")) {
            include_once $module['directory']."/$file_path";
         } 

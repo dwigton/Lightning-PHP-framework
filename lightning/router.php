@@ -10,7 +10,7 @@ class Router
     
     public function __construct($uri)
     {
-        $controllerFile = \App::modDir('lightning').'/error_controller.php';
+        $this->controllerFile = \App::modDir('lightning').'/error_controller.php';
         $this->uri = $paths = explode("/", trim($uri, " /"));
     }
     
